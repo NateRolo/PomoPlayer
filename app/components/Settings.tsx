@@ -10,13 +10,25 @@ interface SettingsProps {
         longBreak: number
     }
     youtubeUrl: string
-    onSave: (durations: SettingsProps["durations"], youtubeUrl: string) => void
+    sessionsUntilLongBreak: number
+    onSave: (
+        durations: SettingsProps["durations"], 
+        youtubeUrl: string,
+        sessionsUntilLongBreak: number
+    ) => void
     onClose: () => void
 }
 
-export const Settings: React.FC<SettingsProps> = ({ durations, youtubeUrl, onSave, onClose }) => {
+export const Settings: React.FC<SettingsProps> = ({ 
+    durations, 
+    youtubeUrl, 
+    sessionsUntilLongBreak,
+    onSave, 
+    onClose 
+}) => {
     const [newDurations, setNewDurations] = useState(durations)
     const [newYoutubeUrl, setNewYoutubeUrl] = useState(youtubeUrl)
+    const [newSessionsUntilLongBreak, setNewSessionsUntilLongBreak] = useState(sessionsUntilLongBreak)
 
     const handleDurationChange = (key: keyof typeof durations, value: string) => {
         setNewDurations({
@@ -25,8 +37,12 @@ export const Settings: React.FC<SettingsProps> = ({ durations, youtubeUrl, onSav
         })
     }
 
+    const handleSessionsUntilLongBreakChange = (value: string) => {
+        setNewSessionsUntilLongBreak(Number(value))
+    }
+
     const handleSave = () => {
-        onSave(newDurations, newYoutubeUrl)
+        onSave(newDurations, newYoutubeUrl, newSessionsUntilLongBreak)
     }
 
     return (
@@ -62,6 +78,16 @@ export const Settings: React.FC<SettingsProps> = ({ durations, youtubeUrl, onSav
                         />
                     </div>
                     <div>
+                        <label className="block">Sessions Until Long Break</label>
+                        <input
+                            type="number"
+                            min="1"
+                            value={newSessionsUntilLongBreak}
+                            onChange={(e) => setNewSessionsUntilLongBreak(Number(e.target.value))}
+                            className="border rounded p-2"
+                        />
+                    </div>
+                    <div>
                         <label className="block">YouTube URL</label>
                         <input
                             type="text"
@@ -69,7 +95,7 @@ export const Settings: React.FC<SettingsProps> = ({ durations, youtubeUrl, onSav
                             onChange={(e) => setNewYoutubeUrl(e.target.value)}
                             className="border rounded p-2 w-full"
                         />
-                    </div>
+                    </div> 
                 </div>
                 <div className="mt-6 space-x-4">
                     <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={handleSave}>
