@@ -2,17 +2,14 @@
 
 import type React from "react"
 import { useState } from "react"
+import { DEFAULT_DURATIONS } from "./PomodoroTimer"
 
 interface SettingsProps {
-    durations: {
-        work: number
-        shortBreak: number
-        longBreak: number
-    }
+    durations: typeof DEFAULT_DURATIONS
     youtubeUrl: string
     sessionsUntilLongBreak: number
     onSave: (
-        durations: SettingsProps["durations"], 
+        durations: typeof DEFAULT_DURATIONS, 
         youtubeUrl: string,
         sessionsUntilLongBreak: number
     ) => void
@@ -26,23 +23,30 @@ export const Settings: React.FC<SettingsProps> = ({
     onSave, 
     onClose 
 }) => {
-    const [newDurations, setNewDurations] = useState(durations)
+    const [workDuration, setWorkDuration] = useState(Math.floor(durations.work / 60))
+    const [shortBreakDuration, setShortBreakDuration] = useState(Math.floor(durations.shortBreak / 60))
+    const [longBreakDuration, setLongBreakDuration] = useState(Math.floor(durations.longBreak / 60))
     const [newYoutubeUrl, setNewYoutubeUrl] = useState(youtubeUrl)
     const [newSessionsUntilLongBreak, setNewSessionsUntilLongBreak] = useState(sessionsUntilLongBreak)
 
     const handleDurationChange = (key: keyof typeof durations, value: string) => {
-        setNewDurations({
-            ...newDurations,
-            [key]: Number.parseInt(value, 10) * 60,
-        })
+        setWorkDuration(Number.parseInt(value, 10))
+        setShortBreakDuration(Number.parseInt(value, 10))
+        setLongBreakDuration(Number.parseInt(value, 10))
     }
 
-    const handleSessionsUntilLongBreakChange = (value: string) => {
-        setNewSessionsUntilLongBreak(Number(value))
-    }
+  
 
     const handleSave = () => {
-        onSave(newDurations, newYoutubeUrl, newSessionsUntilLongBreak)
+        onSave(
+            {
+                work: workDuration * 60,
+                shortBreak: shortBreakDuration * 60,
+                longBreak: longBreakDuration * 60,
+            },
+            newYoutubeUrl,
+            newSessionsUntilLongBreak
+        )
     }
 
     return (
@@ -54,7 +58,7 @@ export const Settings: React.FC<SettingsProps> = ({
                         <label className="block">Work Duration (minutes)</label>
                         <input
                             type="number"
-                            value={newDurations.work / 60}
+                            value={workDuration}
                             onChange={(e) => handleDurationChange("work", e.target.value)}
                             className="border rounded p-2"
                         />
@@ -63,7 +67,7 @@ export const Settings: React.FC<SettingsProps> = ({
                         <label className="block">Short Break Duration (minutes)</label>
                         <input
                             type="number"
-                            value={newDurations.shortBreak / 60}
+                            value={shortBreakDuration}
                             onChange={(e) => handleDurationChange("shortBreak", e.target.value)}
                             className="border rounded p-2"
                         />
@@ -72,7 +76,7 @@ export const Settings: React.FC<SettingsProps> = ({
                         <label className="block">Long Break Duration (minutes)</label>
                         <input
                             type="number"
-                            value={newDurations.longBreak / 60}
+                            value={longBreakDuration}
                             onChange={(e) => handleDurationChange("longBreak", e.target.value)}
                             className="border rounded p-2"
                         />

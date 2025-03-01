@@ -5,10 +5,11 @@ import { useState, useEffect, useCallback } from "react"
 import YouTube from "react-youtube"
 import { Settings } from "./Settings"
 import { PausePrompt } from "./PausePrompt"
+import type { YouTubePlayer } from 'react-youtube';
 
 type SessionType = "work" | "shortBreak" | "longBreak"
 
-const DEFAULT_DURATIONS = {
+export const DEFAULT_DURATIONS = {
     work: 25 * 60,
     shortBreak: 5 * 60,
     longBreak: 15 * 60,
@@ -24,9 +25,30 @@ export const PomodoroTimer: React.FC = () => {
     const [showSettings, setShowSettings] = useState(false)
     const [showPausePrompt, setShowPausePrompt] = useState(false)
     const [youtubeUrl, setYoutubeUrl] = useState(DEFAULT_YOUTUBE_URL)
-    const [player, setPlayer] = useState<any>(null)
+    const [player, setPlayer] = useState<YouTubePlayer | null>(null)
     const [durations, setDurations] = useState(DEFAULT_DURATIONS)
     const [sessionsUntilLongBreak, setSessionsUntilLongBreak] = useState(4)
+
+    const handleSessionComplete = useCallback(() => {
+        const newSessionCount = sessionCount + 1
+        setSessionCount(newSessionCount)
+        localStorage.setItem("sessionCount", newSessionCount.toString())
+        localStorage.setItem("sessionDate", new Date().toDateString())
+
+        let nextSessionType: SessionType
+        if (sessionType === "work") {
+            nextSessionType = newSessionCount > sessionsUntilLongBreak + 1 ? "longBreak" : "shortBreak";
+        } else {
+            nextSessionType = "work";
+        }
+
+        setSessionType(nextSessionType)
+        setTimeLeft(durations[nextSessionType])
+        playSound();
+        if(sessionCount > sessionsUntilLongBreak + 1) {
+            setSessionCount(0);
+        }
+    }, [sessionCount, sessionType, durations, sessionsUntilLongBreak])
 
     useEffect(() => {
         const storedDurations = localStorage.getItem("pomodoroDurations")
@@ -52,7 +74,7 @@ export const PomodoroTimer: React.FC = () => {
         return () => {
             if (interval) clearInterval(interval)
         }
-    }, [isActive, timeLeft])
+    }, [isActive, timeLeft, handleSessionComplete])
 
     useEffect(() => {
         let pauseTimeout: NodeJS.Timeout | null = null
@@ -69,31 +91,12 @@ export const PomodoroTimer: React.FC = () => {
         }
     }, [isActive, timeLeft, durations, sessionType])
 
-    const handleSessionComplete = useCallback(() => {
-        const newSessionCount = sessionCount + 1
-        setSessionCount(newSessionCount)
-        localStorage.setItem("sessionCount", newSessionCount.toString())
-        localStorage.setItem("sessionDate", new Date().toDateString())
-
-        let nextSessionType: SessionType
-        if (sessionType === "work") {
-            nextSessionType = newSessionCount > sessionsUntilLongBreak + 1 ? "longBreak" : "shortBreak";
-        } else {
-            nextSessionType = "work";
-        }
-
-        setSessionType(nextSessionType)
-        setTimeLeft(durations[nextSessionType])
-        playSound();
-        if(sessionCount > sessionsUntilLongBreak + 1) {
-            setSessionCount(0);
-        }
-    }, [sessionCount, sessionType, durations, sessionsUntilLongBreak])
-
     const toggleTimer = () => {
         setIsActive(!isActive)
-        if (player) {
-            isActive ? player.pauseVideo() : player.playVideo()
+        if (player && isActive) {
+            player.pauseVideo();
+        } else if (player && !isActive) {
+            player.playVideo();
         }
     }
 
@@ -109,10 +112,10 @@ export const PomodoroTimer: React.FC = () => {
 
     const playSound = () => {
         const audio = new Audio("/notification.mp3")
-        audio.play()
+        void audio.play()
     }
 
-    const onPlayerReady = (event: { target: any }) => {
+    const onPlayerReady = (event: { target: YouTubePlayer }) => {
         setPlayer(event.target)
     }
 

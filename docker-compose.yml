@@ -1,0 +1,14 @@
+version: '3.8'
+services:
+  pomodoro-app:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+    command: ${START_COMMAND:-npm start}  # Can be overridden with npm run dev
+    restart: unless-stopped 
