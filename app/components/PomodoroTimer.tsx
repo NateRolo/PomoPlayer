@@ -6,6 +6,7 @@ import YouTube from "react-youtube"
 import { Settings } from "./Settings"
 import { PausePrompt } from "./PausePrompt"
 import type { YouTubePlayer } from 'react-youtube';
+import { themes, Theme } from '../types/theme'
 
 type SessionType = "work" | "shortBreak" | "longBreak"
 
@@ -28,6 +29,9 @@ export const PomodoroTimer: React.FC = () => {
     const [player, setPlayer] = useState<YouTubePlayer | null>(null)
     const [durations, setDurations] = useState(DEFAULT_DURATIONS)
     const [sessionsUntilLongBreak, setSessionsUntilLongBreak] = useState(4)
+    const [pausePromptEnabled, setPausePromptEnabled] = useState(true)
+    const [pausePromptDelay, setPausePromptDelay] = useState(2)
+    const [currentTheme, setCurrentTheme] = useState('default')
 
     const handleSessionComplete = useCallback(() => {
         const newSessionCount = sessionCount + 1
@@ -60,6 +64,21 @@ export const PomodoroTimer: React.FC = () => {
         if (storedYoutubeUrl) {
             setYoutubeUrl(storedYoutubeUrl)
         }
+
+        const storedPausePromptEnabled = localStorage.getItem("pausePromptEnabled")
+        const storedPausePromptDelay = localStorage.getItem("pausePromptDelay")
+        
+        if (storedPausePromptEnabled !== null) {
+            setPausePromptEnabled(JSON.parse(storedPausePromptEnabled))
+        }
+        if (storedPausePromptDelay !== null) {
+            setPausePromptDelay(JSON.parse(storedPausePromptDelay))
+        }
+
+        const storedTheme = localStorage.getItem("theme")
+        if (storedTheme) {
+            setCurrentTheme(storedTheme)
+        }
     }, []);
 
     useEffect(() => {
@@ -78,18 +97,19 @@ export const PomodoroTimer: React.FC = () => {
 
     useEffect(() => {
         let pauseTimeout: NodeJS.Timeout | null = null
-        if (!isActive && timeLeft < durations[sessionType]) {
+        if (pausePromptEnabled && !isActive && timeLeft < durations[sessionType]) {
             pauseTimeout = setTimeout(
                 () => {
                     setShowPausePrompt(true)
+                    playSound2();
                 },
-                2 * 60 * 1000,
+                pausePromptDelay * 60 * 1000,
             )
         }
         return () => {
             if (pauseTimeout) clearTimeout(pauseTimeout)
         }
-    }, [isActive, timeLeft, durations, sessionType])
+    }, [isActive, timeLeft, durations, sessionType, pausePromptEnabled, pausePromptDelay])
 
     const toggleTimer = () => {
         setIsActive(!isActive)
@@ -111,7 +131,12 @@ export const PomodoroTimer: React.FC = () => {
     }
 
     const playSound = () => {
-        const audio = new Audio("/notification.mp3")
+        const audio = new Audio("/sounds/notification.mp3")
+        void audio.play()
+    }
+
+    const playSound2 = () => {
+        const audio = new Audio("/sounds/pausePrompt.mp3")
         void audio.play()
     }
 
@@ -125,16 +150,42 @@ export const PomodoroTimer: React.FC = () => {
         return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
     }
 
-    const handleSettingsChange = (newDurations: typeof DEFAULT_DURATIONS, newYoutubeUrl: string, newSessionsUntilLongBreak: number) => {
+    const handleSettingsChange = (
+        newDurations: typeof DEFAULT_DURATIONS, 
+        newYoutubeUrl: string, 
+        newSessionsUntilLongBreak: number,
+        newPausePromptEnabled: boolean,
+        newPausePromptDelay: number,
+        newTheme: string
+    ) => {
+        // Check if current session duration has changed
+        const currentDurationChanged = durations[sessionType] !== newDurations[sessionType];
+
+        // Update all settings
         setDurations(newDurations)
         setYoutubeUrl(newYoutubeUrl)
         setSessionsUntilLongBreak(newSessionsUntilLongBreak)
+        setPausePromptEnabled(newPausePromptEnabled)
+        setPausePromptDelay(newPausePromptDelay)
+        setCurrentTheme(newTheme)
+
+        // Save all settings to localStorage
         localStorage.setItem("pomodoroDurations", JSON.stringify(newDurations))
         localStorage.setItem("youtubeUrl", newYoutubeUrl)
-        localStorage.setItem("sessionsUntilLongBreak", newSessionsUntilLongBreak.toString());
-        setTimeLeft(newDurations[sessionType])
+        localStorage.setItem("sessionsUntilLongBreak", newSessionsUntilLongBreak.toString())
+        localStorage.setItem("pausePromptEnabled", JSON.stringify(newPausePromptEnabled))
+        localStorage.setItem("pausePromptDelay", JSON.stringify(newPausePromptDelay))
+        localStorage.setItem("theme", newTheme)
+
+        // Only reset timer if current session duration changed
+        if (currentDurationChanged) {
+            setTimeLeft(newDurations[sessionType])
+        }
+
         setShowSettings(false)
     }
+
+    const currentThemeColors = themes[currentTheme] || themes.default;
 
     const handlePausePromptAction = (action: string) => {
         switch (action) {
@@ -148,7 +199,7 @@ export const PomodoroTimer: React.FC = () => {
                 setTimeLeft((prevTime) => prevTime + 5 * 60)
                 break
             case "reprompt":
-                
+                setTimeLeft((prevTime) => prevTime + 2 * 60)
                 break
         }
         setShowPausePrompt(false)
@@ -157,22 +208,14 @@ export const PomodoroTimer: React.FC = () => {
     return (
         <>
             <div className={`min-h-screen flex flex-col items-center justify-center p-4 transition-all duration-700 
-                ${sessionType === "work"
-                    ? "bg-gradient-to-br from-red-50 to-red-100"
-                    : sessionType === "shortBreak"
-                        ? "bg-gradient-to-br from-blue-50 to-blue-100"
-                        : "bg-gradient-to-br from-purple-50 to-purple-100"}`}>
+                ${currentThemeColors[sessionType].background}`}>
                 <div className="w-full max-w-4xl mx-auto flex flex-col items-center">
                     <h1 className={`text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r 
-                        ${sessionType === "work"
-                            ? "from-red-500 to-red-700"
-                            : sessionType === "shortBreak"
-                                ? "from-blue-500 to-blue-700"
-                                : "from-purple-500 to-purple-700"}`}>
+                        ${currentThemeColors[sessionType].gradient}`}>
                         PomoPlayer
                     </h1>
 
-                    <div className="text-l font-medium mb-8 opacity-80">
+                    <div className={`text-l font-medium mb-8 opacity-80 ${currentThemeColors[sessionType].text}`}>
                         {sessionType === "work"
                             ? `Work Session ${Math.floor(sessionCount / 2) + 1}/${sessionsUntilLongBreak}`
                             : sessionType === "shortBreak"
@@ -182,11 +225,7 @@ export const PomodoroTimer: React.FC = () => {
 
                     <div className="relative mb-12">
                         <div className={`text-8xl md:text-9xl font-bold tracking-tight 
-                            ${sessionType === "work"
-                                ? "text-red-700"
-                                : sessionType === "shortBreak"
-                                    ? "text-blue-700"
-                                    : "text-purple-700"}`}>
+                            ${currentThemeColors[sessionType].text}`}>
                             {formatTime(timeLeft)}
                         </div>
                         <div className="absolute -bottom-9 left-1/2 transform -translate-x-1/2 flex space-x-2 text-sm opacity-60">
@@ -223,7 +262,7 @@ export const PomodoroTimer: React.FC = () => {
                         </button>
                     </div>
 
-                    <div className="w-full max-w-3xl rounded-xl overflow-hidden shadow-lg">
+                    <div className="w-full max-w-3xl rounded-t-xl overflow-hidden">
                         <YouTube
                             videoId={youtubeUrl.split("v=")[1]}
                             opts={{
@@ -244,6 +283,9 @@ export const PomodoroTimer: React.FC = () => {
                         durations={durations}
                         youtubeUrl={youtubeUrl}
                         sessionsUntilLongBreak={sessionsUntilLongBreak}
+                        pausePromptEnabled={pausePromptEnabled}
+                        pausePromptDelay={pausePromptDelay}
+                        currentTheme={currentTheme}
                         onSave={handleSettingsChange}
                         onClose={() => setShowSettings(false)}
                     />
