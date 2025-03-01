@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState } from "react"
 import { DEFAULT_DURATIONS } from "./PomodoroTimer"
-import { themes, Theme } from '../types/theme'
+import { ThemeName, getSessionColors } from '../types/theme'
 
 interface SettingsProps {
     durations: typeof DEFAULT_DURATIONS
@@ -11,14 +11,14 @@ interface SettingsProps {
     sessionsUntilLongBreak: number
     pausePromptEnabled: boolean
     pausePromptDelay: number
-    currentTheme: string
+    currentTheme: ThemeName
     onSave: (
         durations: typeof DEFAULT_DURATIONS, 
         youtubeUrl: string,
         sessionsUntilLongBreak: number,
         pausePromptEnabled: boolean,
         pausePromptDelay: number,
-        theme: string
+        theme: ThemeName
     ) => void
     onClose: () => void
 }
@@ -33,7 +33,7 @@ const DEFAULT_SETTINGS = {
     youtubeUrl: "https://www.youtube.com/watch?v=jfKfPfyJRdk",
     pausePromptEnabled: true,
     pausePromptDelay: 2,
-    theme: "default"
+    theme: "light" as ThemeName
 }
 
 export const Settings: React.FC<SettingsProps> = ({ 
@@ -54,10 +54,10 @@ export const Settings: React.FC<SettingsProps> = ({
     const [newSessionsUntilLongBreak, setNewSessionsUntilLongBreak] = useState(sessionsUntilLongBreak)
     const [newPausePromptEnabled, setNewPausePromptEnabled] = useState(pausePromptEnabled)
     const [newPausePromptDelay, setNewPausePromptDelay] = useState(pausePromptDelay)
-    const [selectedTheme, setSelectedTheme] = useState(currentTheme)
+    const [selectedTheme, setSelectedTheme] = useState<ThemeName>(currentTheme as ThemeName)
 
     // Get current theme colors
-    const currentThemeColors = themes[selectedTheme] || themes.default;
+    const sessionColors = getSessionColors(selectedTheme, 'work')
 
     const handleDurationChange = (key: keyof typeof durations, value: string) => {
         const numValue = Number.parseInt(value, 10)
@@ -105,7 +105,7 @@ export const Settings: React.FC<SettingsProps> = ({
             setNewYoutubeUrl(DEFAULT_SETTINGS.youtubeUrl);
             setNewPausePromptEnabled(DEFAULT_SETTINGS.pausePromptEnabled);
             setNewPausePromptDelay(DEFAULT_SETTINGS.pausePromptDelay);
-            setSelectedTheme('default');
+            setSelectedTheme('light');
 
             onSave(
                 DEFAULT_SETTINGS.durations,
@@ -119,17 +119,17 @@ export const Settings: React.FC<SettingsProps> = ({
     }
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div className="bg-white rounded-lg w-[800px] h-[600px] flex">
-                
-                <div className="w-48 border-r bg-gray-50 rounded-l-lg">
+        <div className="modal modal-open">
+            <div className={`modal-box w-[800px] h-[600px] flex ${sessionColors.background}`}>
+                {/* Left sidebar with tabs */}
+                <div className="menu bg-base-200 w-48 rounded-l-lg">
                     {tabs.map((tab) => (
                         <button
                             key={tab.id}
-                            className={`w-full text-left px-4 py-3 ${
+                            className={`menu-item ${
                                 activeTab === tab.id 
-                                    ? `bg-white border-l-4 ${currentThemeColors.work.text} font-medium` 
-                                    : 'text-gray-600 hover:bg-gray-100'
+                                    ? `${sessionColors.button.background} ${sessionColors.text}`
+                                    : 'text-base-content hover:bg-base-300'
                             }`}
                             onClick={() => setActiveTab(tab.id)}
                         >
@@ -143,50 +143,51 @@ export const Settings: React.FC<SettingsProps> = ({
                     <div className="flex-1 p-6 overflow-y-auto">
                         {activeTab === 'general' && (
                             <div className="space-y-4">
-                                <h3 className="text-lg font-semibold">General Settings</h3>
+                                <h3 className={`text-lg font-semibold ${sessionColors.text}`}>
+                                    General Settings
+                                </h3>
                                 <div className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">
-                                            Theme
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className={`label-text ${sessionColors.text}`}>Theme</span>
                                         </label>
                                         <select
                                             value={selectedTheme}
-                                            onChange={(e) => setSelectedTheme(e.target.value)}
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                            onChange={(e) => setSelectedTheme(e.target.value as ThemeName)}
+                                            className="select select-bordered w-full"
                                         >
-                                            {Object.entries(themes).map(([key, theme]) => (
-                                                <option key={key} value={key}>
-                                                    {theme.name}
-                                                </option>
-                                            ))}
+                                            <option value="light">Light</option>
+                                            <option value="dark">Dark</option>
                                         </select>
                                     </div>
-                                    <div className="flex items-center justify-between">
-                                        <label className="text-sm font-medium text-gray-700">
-                                            Enable Pause Prompts
-                                        </label>
-                                        <label className="relative inline-flex items-center cursor-pointer">
+
+                                    <div className="form-control">
+                                        <label className="label cursor-pointer">
+                                            <span className={`label-text ${sessionColors.text}`}>
+                                                Enable Pause Prompts
+                                            </span>
                                             <input
                                                 type="checkbox"
                                                 checked={newPausePromptEnabled}
                                                 onChange={(e) => setNewPausePromptEnabled(e.target.checked)}
-                                                className="sr-only peer"
+                                                className="toggle toggle-primary"
                                             />
-                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
                                         </label>
                                     </div>
                                     
                                     {newPausePromptEnabled && (
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">
-                                                Show Prompt After (minutes)
+                                        <div className="form-control">
+                                            <label className="label">
+                                                <span className={`label-text ${sessionColors.text}`}>
+                                                    Show Prompt After (minutes)
+                                                </span>
                                             </label>
                                             <input
                                                 type="number"
                                                 min="1"
                                                 value={newPausePromptDelay}
                                                 onChange={(e) => setNewPausePromptDelay(Number(e.target.value))}
-                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                                className="input input-bordered w-full"
                                             />
                                         </div>
                                     )}
@@ -196,43 +197,51 @@ export const Settings: React.FC<SettingsProps> = ({
                         
                         {activeTab === 'timers' && (
                             <div className="space-y-4">
-                                <h3 className="text-lg font-semibold">Timer Settings</h3>
+                                <h3 className={`text-lg font-semibold ${sessionColors.text}`}>Timer Settings</h3>
                                 <div className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">Work Duration</label>
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text">Work Duration</span>
+                                        </label>
                                         <input
                                             type="number"
                                             value={workDuration}
                                             onChange={(e) => handleDurationChange("work", e.target.value)}
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                            className="input input-bordered w-full"
                                         />
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">Short Break Duration</label>
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text">Short Break Duration</span>
+                                        </label>
                                         <input
                                             type="number"
                                             value={shortBreakDuration}
                                             onChange={(e) => handleDurationChange("shortBreak", e.target.value)}
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                            className="input input-bordered w-full"
                                         />
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">Long Break Duration</label>
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text">Long Break Duration</span>
+                                        </label>
                                         <input
                                             type="number"
                                             value={longBreakDuration}
                                             onChange={(e) => handleDurationChange("longBreak", e.target.value)}
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                            className="input input-bordered w-full"
                                         />
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">Sessions Until Long Break</label>
+                                    <div className="form-control">
+                                        <label className="label">
+                                            <span className="label-text">Sessions Until Long Break</span>
+                                        </label>
                                         <input
                                             type="number"
                                             min="1"
                                             value={newSessionsUntilLongBreak}
                                             onChange={(e) => setNewSessionsUntilLongBreak(Number(e.target.value))}
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                            className="input input-bordered w-full"
                                         />
                                     </div>
                                 </div>
@@ -262,21 +271,22 @@ export const Settings: React.FC<SettingsProps> = ({
                         )}
                     </div>
 
-                    <div className="border-t p-4 flex justify-end space-x-4">
+                    {/* Footer */}
+                    <div className="modal-action px-6 py-4 bg-base-200">
                         <button
-                            className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 mr-auto"
+                            className="btn btn-error mr-auto"
                             onClick={handleReset}
                         >
                             Reset
                         </button>
                         <button 
-                            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300" 
+                            className="btn btn-ghost" 
                             onClick={onClose}
                         >
                             Cancel
                         </button>
                         <button 
-                            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                            className={`btn ${sessionColors.button.background}`}
                             onClick={handleSave}
                         >
                             Save Changes

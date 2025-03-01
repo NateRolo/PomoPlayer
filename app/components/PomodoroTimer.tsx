@@ -6,7 +6,7 @@ import YouTube from "react-youtube"
 import { Settings } from "./Settings"
 import { PausePrompt } from "./PausePrompt"
 import type { YouTubePlayer } from 'react-youtube';
-import { themes, Theme } from '../types/theme'
+import { getSessionColors, ThemeName } from '../types/theme'
 
 type SessionType = "work" | "shortBreak" | "longBreak"
 
@@ -31,7 +31,7 @@ export const PomodoroTimer: React.FC = () => {
     const [sessionsUntilLongBreak, setSessionsUntilLongBreak] = useState(4)
     const [pausePromptEnabled, setPausePromptEnabled] = useState(true)
     const [pausePromptDelay, setPausePromptDelay] = useState(2)
-    const [currentTheme, setCurrentTheme] = useState('default')
+    const [currentTheme, setCurrentTheme] = useState('light')
 
     const handleSessionComplete = useCallback(() => {
         const newSessionCount = sessionCount + 1
@@ -75,11 +75,14 @@ export const PomodoroTimer: React.FC = () => {
             setPausePromptDelay(JSON.parse(storedPausePromptDelay))
         }
 
-        const storedTheme = localStorage.getItem("theme")
-        if (storedTheme) {
-            setCurrentTheme(storedTheme)
-        }
+        const storedTheme = localStorage.getItem("theme") as ThemeName || 'light'
+        setCurrentTheme(storedTheme);
+        document.documentElement.setAttribute("data-theme", storedTheme);
     }, []);
+
+    useEffect(() => {
+        document.documentElement.setAttribute("data-theme", currentTheme)
+    }, [currentTheme]);
 
     useEffect(() => {
         let interval: NodeJS.Timeout | null = null
@@ -185,7 +188,7 @@ export const PomodoroTimer: React.FC = () => {
         setShowSettings(false)
     }
 
-    const currentThemeColors = themes[currentTheme] || themes.default;
+    const currentThemeColors = getSessionColors(currentTheme as ThemeName, sessionType);
 
     const handlePausePromptAction = (action: string) => {
         switch (action) {
@@ -208,14 +211,14 @@ export const PomodoroTimer: React.FC = () => {
     return (
         <>
             <div className={`min-h-screen flex flex-col items-center justify-center p-4 transition-all duration-700 
-                ${currentThemeColors[sessionType].background}`}>
+                ${currentThemeColors.background}`}>
                 <div className="w-full max-w-4xl mx-auto flex flex-col items-center">
-                    <h1 className={`text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r 
-                        ${currentThemeColors[sessionType].gradient}`}>
+                    <h1 className={`text-4xl font-bold mb-2 bg-clip-text bg-gradient-to-r 
+                        ${currentThemeColors.text}`}>
                         PomoPlayer
                     </h1>
 
-                    <div className={`text-l font-medium mb-8 opacity-80 ${currentThemeColors[sessionType].text}`}>
+                    <div className={`text-l font-medium mb-8 opacity-80 ${currentThemeColors.text}`}>
                         {sessionType === "work"
                             ? `Work Session ${Math.floor(sessionCount / 2) + 1}/${sessionsUntilLongBreak}`
                             : sessionType === "shortBreak"
@@ -225,7 +228,7 @@ export const PomodoroTimer: React.FC = () => {
 
                     <div className="relative mb-12">
                         <div className={`text-8xl md:text-9xl font-bold tracking-tight 
-                            ${currentThemeColors[sessionType].text}`}>
+                            ${currentThemeColors.text}`}>
                             {formatTime(timeLeft)}
                         </div>
                         <div className="absolute -bottom-9 left-1/2 transform -translate-x-1/2 flex space-x-2 text-sm opacity-60">
@@ -285,7 +288,7 @@ export const PomodoroTimer: React.FC = () => {
                         sessionsUntilLongBreak={sessionsUntilLongBreak}
                         pausePromptEnabled={pausePromptEnabled}
                         pausePromptDelay={pausePromptDelay}
-                        currentTheme={currentTheme}
+                        currentTheme={currentTheme as ThemeName}
                         onSave={handleSettingsChange}
                         onClose={() => setShowSettings(false)}
                     />
