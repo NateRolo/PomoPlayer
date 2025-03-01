@@ -84,7 +84,7 @@ export const PomodoroTimer: React.FC = () => {
                     setShowPausePrompt(true)
                 },
                 2 * 60 * 1000,
-            ) // 2 minutes
+            )
         }
         return () => {
             if (pauseTimeout) clearTimeout(pauseTimeout)
@@ -148,7 +148,7 @@ export const PomodoroTimer: React.FC = () => {
                 setTimeLeft((prevTime) => prevTime + 5 * 60)
                 break
             case "reprompt":
-                // Do nothing, it will automatically reprompt
+                
                 break
         }
         setShowPausePrompt(false)
