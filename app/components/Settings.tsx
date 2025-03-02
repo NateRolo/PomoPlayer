@@ -25,6 +25,8 @@ interface SettingsProps {
         youtubePlayerVisible: boolean
     ) => void
     onClose: () => void
+    mockSession?: { user: { name: string, email: string, image?: string, isPremium: boolean } } | null;
+    onPurchasePremium?: () => void;
 }
 
 const DEFAULT_SETTINGS = {
@@ -52,7 +54,9 @@ export const Settings: React.FC<SettingsProps> = ({
     soundsEnabled,
     youtubePlayerVisible,
     onSave, 
-    onClose 
+    onClose,
+    mockSession,
+    onPurchasePremium
 }) => {
     const [activeTab, setActiveTab] = useState('general')
     const [workDuration, setWorkDuration] = useState(Math.floor(durations.work / 60))
@@ -177,17 +181,36 @@ export const Settings: React.FC<SettingsProps> = ({
                                             onChange={(e) => setSelectedTheme(e.target.value as ThemeName)}
                                             className="select select-bordered w-full py-2"
                                         >
-                                            <option value="dark">Dark</option>
-                                            <option value="light">Light</option>
-                                            <option value="cupcake">Cupcake</option>
-                                            <option value="forest">Forest</option>
-                                            <option value="bumblebee">Bumblebee</option>
-                                            <option value="emerald">Emerald</option>
-                                            <option value="corporate">Corporate</option>
-                                            <option value="synthwave">Synthwave</option>
-                                            <option value="retro">Retro</option>
-                                            <option value="cyberpunk">Cyberpunk</option>
+                                            <optgroup label="Free Themes">
+                                                <option value="dark">Dark</option>
+                                                <option value="light">Light</option>
+                                                <option value="cupcake">Cupcake</option>
+                                                <option value="forest">Forest</option>
+                                            </optgroup>
+                                            
+                                            <optgroup label="Premium Themes" disabled={!mockSession?.user?.isPremium}>
+                                                <option value="bumblebee">Bumblebee</option>
+                                                <option value="emerald">Emerald</option>
+                                                <option value="corporate">Corporate</option>
+                                                <option value="synthwave">Synthwave</option>
+                                                <option value="retro">Retro</option>
+                                                <option value="cyberpunk">Cyberpunk</option>
+                                                <option value="valentine">Valentine</option>
+                                                <option value="halloween">Halloween</option>
+                                                <option value="garden">Garden</option>
+                                                <option value="aqua">Aqua</option>
+                                                {/* Add more premium themes as needed */}
+                                            </optgroup>
                                         </select>
+                                        
+                                        {!mockSession?.user?.isPremium && (
+                                            <div className="mt-2 text-xs text-info flex items-center gap-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="w-4 h-4 stroke-current">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                </svg>
+                                                <span>Upgrade to access all 30 premium themes</span>
+                                            </div>
+                                        )}
                                     </div>
                                     
                                     <div className="form-control md:col-span-2">
@@ -326,9 +349,77 @@ export const Settings: React.FC<SettingsProps> = ({
                         {activeTab === 'account' && (
                             <div className="space-y-4">
                                 <h3 className="text-xl font-semibold">Account Settings</h3>
-                                <div className="grid grid-cols-1 gap-4">
-                                    <p className="text-sm text-base-content/70">No account settings available yet.</p>
-                                </div>
+
+                                {mockSession ? (
+                                    <div className="space-y-6">
+                                        <div className="flex items-center gap-4">
+                                            {mockSession.user.image ? (
+                                                <img
+                                                    src={mockSession.user.image}
+                                                    alt={mockSession.user.name || "User"}
+                                                    className="w-16 h-16 rounded-full"
+                                                />
+                                            ) : (
+                                                <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-primary-content text-xl">
+                                                    {mockSession.user.name?.charAt(0) || mockSession.user.email?.charAt(0) || "U"}
+                                                </div>
+                                            )}
+                                            <div>
+                                                <p className="font-medium text-lg">{mockSession.user.name}</p>
+                                                <p className="text-sm opacity-70">{mockSession.user.email}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="divider"></div>
+
+                                        <div className="bg-base-200 p-4 rounded-lg">
+                                            <h4 className="font-medium mb-2">Premium Themes</h4>
+                                            {mockSession.user.isPremium ? (
+                                                <div className="flex items-center gap-2 text-success">
+                                                    <span className="text-success">✓</span>
+                                                    <span>You have access to all premium themes</span>
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-3">
+                                                    <p>Unlock all 30 premium themes for a one-time payment of $2 CAD</p>
+                                                    <button
+                                                        className="btn btn-primary btn-sm"
+                                                        onClick={onPurchasePremium}
+                                                    >
+                                                        Upgrade Now
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <button
+                                            className="btn btn-outline btn-sm"
+                                            onClick={() => {
+                                                // This will be connected to the backend later
+                                                console.log("Sign out clicked");
+                                                onClose();
+                                            }}
+                                        >
+                                            Sign Out
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center py-8">
+                                        <p className="mb-4 text-center">
+                                            Sign in to sync your settings across devices and access premium themes
+                                        </p>
+                                        <button
+                                            className="btn btn-primary"
+                                            onClick={() => {
+                                                // This will be connected to the backend later
+                                                console.log("Sign in clicked from settings");
+                                                onClose();
+                                            }}
+                                        >
+                                            Sign In / Create Account
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
