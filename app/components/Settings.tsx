@@ -12,13 +12,17 @@ interface SettingsProps {
     pausePromptEnabled: boolean
     pausePromptDelay: number
     currentTheme: ThemeName
+    soundsEnabled: boolean
+    youtubePlayerVisible: boolean
     onSave: (
         durations: typeof DEFAULT_DURATIONS, 
         youtubeUrl: string,
         sessionsUntilLongBreak: number,
         pausePromptEnabled: boolean,
         pausePromptDelay: number,
-        theme: ThemeName
+        theme: ThemeName,
+        soundsEnabled: boolean,
+        youtubePlayerVisible: boolean
     ) => void
     onClose: () => void
 }
@@ -33,7 +37,9 @@ const DEFAULT_SETTINGS = {
     youtubeUrl: "https://www.youtube.com/watch?v=jfKfPfyJRdk",
     pausePromptEnabled: true,
     pausePromptDelay: 2,
-    theme: "dark" as ThemeName
+    theme: "dark" as ThemeName,
+    soundsEnabled: true,
+    youtubePlayerVisible: true
 }
 
 export const Settings: React.FC<SettingsProps> = ({ 
@@ -43,6 +49,8 @@ export const Settings: React.FC<SettingsProps> = ({
     pausePromptEnabled,
     pausePromptDelay,
     currentTheme,
+    soundsEnabled,
+    youtubePlayerVisible,
     onSave, 
     onClose 
 }) => {
@@ -55,6 +63,8 @@ export const Settings: React.FC<SettingsProps> = ({
     const [newPausePromptEnabled, setNewPausePromptEnabled] = useState(pausePromptEnabled)
     const [newPausePromptDelay, setNewPausePromptDelay] = useState(pausePromptDelay)
     const [selectedTheme, setSelectedTheme] = useState<ThemeName>(currentTheme as ThemeName)
+    const [newSoundsEnabled, setNewSoundsEnabled] = useState(soundsEnabled)
+    const [newYoutubePlayerVisible, setNewYoutubePlayerVisible] = useState(youtubePlayerVisible)
 
     // Get current theme colors
     const sessionColors = getSessionColors(selectedTheme, 'work')
@@ -92,7 +102,9 @@ export const Settings: React.FC<SettingsProps> = ({
             newSessionsUntilLongBreak,
             newPausePromptEnabled,
             newPausePromptDelay,
-            selectedTheme
+            selectedTheme,
+            newSoundsEnabled,
+            newYoutubePlayerVisible
         )
     }
 
@@ -106,6 +118,8 @@ export const Settings: React.FC<SettingsProps> = ({
             setNewPausePromptEnabled(DEFAULT_SETTINGS.pausePromptEnabled);
             setNewPausePromptDelay(DEFAULT_SETTINGS.pausePromptDelay);
             setSelectedTheme('dark');
+            setNewSoundsEnabled(DEFAULT_SETTINGS.soundsEnabled);
+            setNewYoutubePlayerVisible(DEFAULT_SETTINGS.youtubePlayerVisible);
 
             onSave(
                 DEFAULT_SETTINGS.durations,
@@ -113,7 +127,9 @@ export const Settings: React.FC<SettingsProps> = ({
                 DEFAULT_SETTINGS.sessionsUntilLongBreak,
                 DEFAULT_SETTINGS.pausePromptEnabled,
                 DEFAULT_SETTINGS.pausePromptDelay,
-                DEFAULT_SETTINGS.theme
+                DEFAULT_SETTINGS.theme,
+                DEFAULT_SETTINGS.soundsEnabled,
+                DEFAULT_SETTINGS.youtubePlayerVisible
             )
         }
     }
@@ -173,7 +189,21 @@ export const Settings: React.FC<SettingsProps> = ({
                                             <option value="cyberpunk">Cyberpunk</option>
                                         </select>
                                     </div>
-
+                                    
+                                    <div className="form-control md:col-span-2">
+                                        <label className="label cursor-pointer justify-between py-1">
+                                            <span className={`label-text text-base ${sessionColors.text}`}>
+                                                Show YouTube Player
+                                            </span>
+                                            <input
+                                                type="checkbox"
+                                                checked={newYoutubePlayerVisible}
+                                                onChange={(e) => setNewYoutubePlayerVisible(e.target.checked)}
+                                                className="toggle toggle-primary toggle-md bg-base-300 border-2 border-base-content/20"
+                                            />
+                                        </label>
+                                    </div>
+                                    
                                     <div className="form-control md:col-span-2">
                                         <label className="label cursor-pointer justify-between py-1">
                                             <span className={`label-text text-base ${sessionColors.text}`}>
@@ -183,11 +213,11 @@ export const Settings: React.FC<SettingsProps> = ({
                                                 type="checkbox"
                                                 checked={newPausePromptEnabled}
                                                 onChange={(e) => setNewPausePromptEnabled(e.target.checked)}
-                                                className="toggle toggle-primary"
+                                                className="toggle toggle-primary toggle-md bg-base-300 border-2 border-base-content/20"
                                             />
                                         </label>
                                     </div>
-                                    
+
                                     {newPausePromptEnabled && (
                                         <div className="form-control md:col-span-2">
                                             <label className="label py-1">
@@ -276,6 +306,19 @@ export const Settings: React.FC<SettingsProps> = ({
                                             className="input input-bordered w-full py-2"
                                         />
                                     </div> 
+                                    <div className="form-control">
+                                        <label className="label cursor-pointer justify-between py-1">
+                                            <span className={`label-text text-base ${sessionColors.text}`}>
+                                                Enable Sounds
+                                            </span>
+                                            <input
+                                                type="checkbox"
+                                                checked={newSoundsEnabled}
+                                                onChange={(e) => setNewSoundsEnabled(e.target.checked)}
+                                                className="toggle toggle-primary toggle-md bg-base-300 border-2 border-base-content/20"
+                                            />
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                         )}

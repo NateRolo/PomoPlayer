@@ -32,6 +32,8 @@ export const PomodoroTimer: React.FC = () => {
     const [pausePromptEnabled, setPausePromptEnabled] = useState(true)
     const [pausePromptDelay, setPausePromptDelay] = useState(2)
     const [currentTheme, setCurrentTheme] = useState('dark')
+    const [soundsEnabled, setSoundsEnabled] = useState(true)
+    const [youtubePlayerVisible, setYoutubePlayerVisible] = useState(true)
 
     const handleSessionComplete = useCallback(() => {
         const newSessionCount = sessionCount + 1
@@ -68,12 +70,20 @@ export const PomodoroTimer: React.FC = () => {
 
         const storedPausePromptEnabled = localStorage.getItem("pausePromptEnabled")
         const storedPausePromptDelay = localStorage.getItem("pausePromptDelay")
+        const storedSoundsEnabled = localStorage.getItem("soundsEnabled")
+        const storedYoutubePlayerVisible = localStorage.getItem("youtubePlayerVisible")
 
         if (storedPausePromptEnabled !== null) {
             setPausePromptEnabled(JSON.parse(storedPausePromptEnabled))
         }
         if (storedPausePromptDelay !== null) {
             setPausePromptDelay(JSON.parse(storedPausePromptDelay))
+        }
+        if (storedSoundsEnabled !== null) {
+            setSoundsEnabled(JSON.parse(storedSoundsEnabled))
+        }
+        if (storedYoutubePlayerVisible !== null) {
+            setYoutubePlayerVisible(JSON.parse(storedYoutubePlayerVisible))
         }
 
         // Load and set theme
@@ -132,13 +142,17 @@ export const PomodoroTimer: React.FC = () => {
     }
 
     const playSound = () => {
-        const audio = new Audio("/sounds/notification.mp3")
-        void audio.play()
+        if (soundsEnabled) {
+            const audio = new Audio("/sounds/notification.mp3")
+            void audio.play()
+        }
     }
 
     const playSound2 = () => {
-        const audio = new Audio("/sounds/pausePrompt.mp3")
-        void audio.play()
+        if (soundsEnabled) {
+            const audio = new Audio("/sounds/pausePrompt.mp3")
+            void audio.play()
+        }
     }
 
     const onPlayerReady = (event: { target: YouTubePlayer }) => {
@@ -157,7 +171,9 @@ export const PomodoroTimer: React.FC = () => {
         newSessionsUntilLongBreak: number,
         newPausePromptEnabled: boolean,
         newPausePromptDelay: number,
-        newTheme: ThemeName
+        newTheme: ThemeName,
+        newSoundsEnabled: boolean,
+        newYoutubePlayerVisible: boolean
     ) => {
         // Add debug log
         console.log("Setting theme to:", newTheme);
@@ -172,6 +188,8 @@ export const PomodoroTimer: React.FC = () => {
         setPausePromptEnabled(newPausePromptEnabled)
         setPausePromptDelay(newPausePromptDelay)
         setCurrentTheme(newTheme)
+        setSoundsEnabled(newSoundsEnabled)
+        setYoutubePlayerVisible(newYoutubePlayerVisible)
         document.documentElement.setAttribute("data-theme", newTheme)
 
         // Save all settings to localStorage
@@ -181,6 +199,8 @@ export const PomodoroTimer: React.FC = () => {
         localStorage.setItem("pausePromptEnabled", JSON.stringify(newPausePromptEnabled))
         localStorage.setItem("pausePromptDelay", JSON.stringify(newPausePromptDelay))
         localStorage.setItem("theme", newTheme)
+        localStorage.setItem("soundsEnabled", JSON.stringify(newSoundsEnabled))
+        localStorage.setItem("youtubePlayerVisible", JSON.stringify(newYoutubePlayerVisible))
 
         // Only reset timer if current session duration changed
         if (currentDurationChanged) {
@@ -309,18 +329,20 @@ export const PomodoroTimer: React.FC = () => {
                     </div>
 
                     <div className="w-full max-w-2xl rounded-t-xl overflow-hidden">
-                        <YouTube
-                            videoId={youtubeUrl.split("v=")[1]}
-                            opts={{
-                                height: "100%",
-                                width: "100%",
-                                playerVars: {
-                                    autoplay: isActive ? 1 : 0,
-                                },
-                            }}
-                            onReady={onPlayerReady}
-                            className="w-full aspect-video"
-                        />
+                        {youtubePlayerVisible && (
+                            <YouTube
+                                videoId={youtubeUrl.split("v=")[1]}
+                                opts={{
+                                    height: "100%",
+                                    width: "100%",
+                                    playerVars: {
+                                        autoplay: isActive ? 1 : 0,
+                                    },
+                                }}
+                                onReady={onPlayerReady}
+                                className="w-full aspect-video"
+                            />
+                        )}
                     </div>
                 </div>
 
@@ -332,6 +354,8 @@ export const PomodoroTimer: React.FC = () => {
                         pausePromptEnabled={pausePromptEnabled}
                         pausePromptDelay={pausePromptDelay}
                         currentTheme={currentTheme as ThemeName}
+                        soundsEnabled={soundsEnabled}
+                        youtubePlayerVisible={youtubePlayerVisible}
                         onSave={handleSettingsChange}
                         onClose={() => setShowSettings(false)}
                     />
