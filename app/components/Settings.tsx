@@ -5,6 +5,7 @@ import { useState, useEffect } from "react"
 import { DEFAULT_DURATIONS } from "./PomodoroTimer"
 import { ThemeName, getSessionColors } from '../types/theme'
 import { createPortal } from 'react-dom'
+import { useAuth } from '../components/contexts/AuthContext'
 
 interface SettingsProps {
     durations: typeof DEFAULT_DURATIONS
@@ -15,6 +16,7 @@ interface SettingsProps {
     currentTheme: ThemeName
     soundsEnabled: boolean
     youtubePlayerVisible: boolean
+    isPremium: boolean
     onSave: (
         durations: typeof DEFAULT_DURATIONS, 
         youtubeUrl: string,
@@ -26,7 +28,6 @@ interface SettingsProps {
         youtubePlayerVisible: boolean
     ) => void
     onClose: () => void
-    mockSession?: { user: { name: string, email: string, image?: string, isPremium: boolean } } | null;
     onPurchasePremium?: () => void;
     onShowAuthModal?: () => void;
 }
@@ -55,9 +56,9 @@ export const Settings: React.FC<SettingsProps> = ({
     currentTheme,
     soundsEnabled,
     youtubePlayerVisible,
+    isPremium,
     onSave, 
     onClose,
-    mockSession,
     onPurchasePremium,
     onShowAuthModal
 }) => {
@@ -74,6 +75,7 @@ export const Settings: React.FC<SettingsProps> = ({
     const [newYoutubePlayerVisible, setNewYoutubePlayerVisible] = useState(youtubePlayerVisible)
     const [showResetConfirmation, setShowResetConfirmation] = useState(false)
     const [isBrowser, setIsBrowser] = useState(false)
+    const { user } = useAuth()
 
     // Get current theme colors
     const sessionColors = getSessionColors(selectedTheme, 'work')
@@ -198,7 +200,7 @@ export const Settings: React.FC<SettingsProps> = ({
                                             <option value="forest">Forest</option>
                                             </optgroup>
                                             
-                                            <optgroup label="Premium Themes" disabled={!mockSession?.user?.isPremium}>
+                                            <optgroup label="Premium Themes" disabled={!user}>
                                             <option value="bumblebee">Bumblebee</option>
                                             <option value="emerald">Emerald</option>
                                             <option value="corporate">Corporate</option>
@@ -212,7 +214,7 @@ export const Settings: React.FC<SettingsProps> = ({
                                             </optgroup>
                                         </select>
                                         
-                                        {!mockSession?.user?.isPremium && (
+                                        {!user && (
                                             <div className="flex items-center gap-2 text-info mt-2">
                                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                                 <span className="text-xs">Upgrade to access all premium themes</span>
@@ -404,17 +406,17 @@ export const Settings: React.FC<SettingsProps> = ({
                                     Account Settings
                                 </h3>
                                 
-                                {mockSession ? (
+                                {user ? (
                                     <div className="space-y-6">
                                         <div className="card bg-base-200">
                                             <div className="card-body p-4">
                                                 <div className="flex items-center gap-4">
-                                                    {mockSession.user.image ? (
+                                                    {user.user_metadata?.avatar_url ? (
                                                         <div className="avatar">
                                                             <div className="w-16 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
                                                                 <img 
-                                                                    src={mockSession.user.image}
-                                                                    alt={mockSession.user.name || "User"}
+                                                                    src={user.user_metadata.avatar_url}
+                                                                    alt={user.user_metadata?.full_name || "User"}
                                                                 />
                                                             </div>
                                                         </div>
@@ -422,14 +424,14 @@ export const Settings: React.FC<SettingsProps> = ({
                                                         <div className="avatar placeholder">
                                                             <div className="bg-neutral-focus text-neutral-content rounded-full w-16">
                                                                 <span className="text-xl">
-                                                                    {mockSession.user.name?.charAt(0) || mockSession.user.email?.charAt(0) || "U"}
+                                                                    {user.user_metadata?.full_name?.charAt(0) || user.email?.charAt(0) || "U"}
                                                                 </span>
                                                             </div>
                                                         </div>
                                                     )}
                                                     <div>
-                                                        <p className="font-medium text-lg">{mockSession.user.name}</p>
-                                                        <p className="text-sm opacity-70">{mockSession.user.email}</p>
+                                                        <p className="font-medium text-lg">{user.user_metadata?.full_name || user.email?.split('@')[0]}</p>
+                                                        <p className="text-sm opacity-70">{user.email}</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -438,7 +440,7 @@ export const Settings: React.FC<SettingsProps> = ({
                                         <div className="card bg-base-200">
                                             <div className="card-body p-4">
                                                 <h2 className="card-title text-base">Premium Themes</h2>
-                                                {mockSession.user.isPremium ? (
+                                                {isPremium ? (
                                                     <div className="alert alert-success">
                                                         <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                                         <span>You have access to all premium themes</span>
@@ -456,37 +458,17 @@ export const Settings: React.FC<SettingsProps> = ({
                                                 )}
                                             </div>
                                         </div>
-                                        
-                                        <button 
-                                            className="btn btn-outline btn-sm w-full sm:w-auto"
-                                            onClick={() => {
-                                                console.log("Sign out clicked");
-                                                onClose();
-                                            }}
-                                        >
-                                            Sign Out
-                                        </button>
                                     </div>
                                 ) : (
                                     <div className="card bg-base-200">
-                                        <div className="card-body items-center text-center">
-                                            <h2 className="card-title">Not Signed In</h2>
-                                            <p className="py-4">
-                                                Sign in to sync your settings across devices and access premium themes
-                                            </p>
-                                            <div className="card-actions justify-center">
-                                                <button 
-                                                    className="btn btn-primary"
-                                                    onClick={() => {
-                                                        if (onShowAuthModal) {
-                                                            onShowAuthModal();
-                                                            onClose();
-                                                        }
-                                                    }}
-                                                >
-                                                    Sign In / Create Account
-                                                </button>
-                                            </div>
+                                        <div className="card-body p-4">
+                                            <p>Sign in to access account features and premium themes</p>
+                                            <button 
+                                                className="btn btn-primary btn-sm mt-2"
+                                                onClick={onShowAuthModal}
+                                            >
+                                                Sign In
+                                            </button>
                                         </div>
                                     </div>
                                 )}

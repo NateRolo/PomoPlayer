@@ -9,6 +9,8 @@ import type { YouTubePlayer } from 'react-youtube'
 import { getSessionColors, ThemeName } from '../types/theme'
 import { AuthModal } from "./AuthModal"
 import { VideoLibrary } from "./VideoLibrary"
+import { useAuth } from '../components/contexts/AuthContext'
+import { useUserSettings } from '../hooks/useUserSettings'
 
 type SessionType = "work" | "shortBreak" | "longBreak"
 
@@ -21,25 +23,25 @@ export const DEFAULT_DURATIONS = {
 const DEFAULT_YOUTUBE_URL = "https://www.youtube.com/watch?v=jfKfPfyJRdk"
 
 export const PomodoroTimer: React.FC = () => {
+    const { user, signOut, isPremium, setPremiumStatus } = useAuth()
+    const { settings, saveSettings, loading: settingsLoading } = useUserSettings()
     const [sessionType, setSessionType] = useState<SessionType>("work")
-    const [timeLeft, setTimeLeft] = useState(DEFAULT_DURATIONS.work)
+    const [timeLeft, setTimeLeft] = useState(settings.durations.work)
     const [isActive, setIsActive] = useState(false)
     const [sessionCount, setSessionCount] = useState(0)
     const [showSettings, setShowSettings] = useState(false)
     const [showPausePrompt, setShowPausePrompt] = useState(false)
-    const [youtubeUrl, setYoutubeUrl] = useState(DEFAULT_YOUTUBE_URL)
+    const [youtubeUrl, setYoutubeUrl] = useState(settings.youtubeUrl)
     const [player, setPlayer] = useState<YouTubePlayer | null>(null)
-    const [durations, setDurations] = useState(DEFAULT_DURATIONS)
-    const [sessionsUntilLongBreak, setSessionsUntilLongBreak] = useState(4)
-    const [pausePromptEnabled, setPausePromptEnabled] = useState(true)
-    const [pausePromptDelay, setPausePromptDelay] = useState(2)
+    const [durations, setDurations] = useState(settings.durations)
+    const [sessionsUntilLongBreak, setSessionsUntilLongBreak] = useState(settings.sessionsUntilLongBreak)
+    const [pausePromptEnabled, setPausePromptEnabled] = useState(settings.pausePromptEnabled)
+    const [pausePromptDelay, setPausePromptDelay] = useState(settings.pausePromptDelay)
     const [currentTheme, setCurrentTheme] = useState('dark')
-    const [soundsEnabled, setSoundsEnabled] = useState(true)
-    const [youtubePlayerVisible, setYoutubePlayerVisible] = useState(true)
-    const [showAuthModal, setShowAuthModal] = useState(false);
-    const [mockSession, setMockSession] = useState<null | { user: { name: string, email: string, image?: string, isPremium: boolean } }>(null);
-    const [showVideoLibrary, setShowVideoLibrary] = useState(false);
-
+    const [soundsEnabled, setSoundsEnabled] = useState(settings.soundsEnabled)
+    const [youtubePlayerVisible, setYoutubePlayerVisible] = useState(settings.youtubePlayerVisible)
+    const [showAuthModal, setShowAuthModal] = useState(false)
+    const [showVideoLibrary, setShowVideoLibrary] = useState(false)
 
     const handleSessionComplete = useCallback(() => {
         const newSessionCount = sessionCount + 1
@@ -245,41 +247,26 @@ export const PomodoroTimer: React.FC = () => {
         }
     }
 
-    const mockLogin = (name: string, email: string) => {
-        setMockSession({
-            user: {
-                name,
-                email,
-                isPremium: false
-            }
-        });
+    const handleAuthModalClose = () => {
         setShowAuthModal(false);
     };
-
-    const mockLogout = () => {
-        setMockSession(null);
+    
+    const handleSignOut = async () => {
+        await signOut();
     };
     
-    const currentThemeColors = getSessionColors(currentTheme as ThemeName, sessionType);
-
-    
-    const handlePurchasePremium = () => {
-        
+    const handlePurchasePremium = async () => {
         console.log("Purchase premium clicked");
         
-        setTimeout(() => {
-            setMockSession(prev => prev ? {
-                ...prev,
-                user: {
-                    ...prev.user,
-                    isPremium: true
-                }
-            } : null);
+        setTimeout(async () => {
+            await setPremiumStatus(true);
             
             // Show a success message
             alert("Premium purchase successful! You now have access to all themes.");
         }, 2000);
     };
+
+    const currentThemeColors = getSessionColors(currentTheme as ThemeName, sessionType);
 
     return (
         <>
@@ -298,24 +285,23 @@ export const PomodoroTimer: React.FC = () => {
                                 : "Long Break"}
                     </div>
 
-
                     <div className="absolute top-4 right-4">
-                        {mockSession ? (
+                        {user ? (
                             <div className="dropdown dropdown-end">
                                 <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
-                                    {mockSession.user.image ? (
+                                    {user.user_metadata?.avatar_url ? (
                                         <div className="w-10 rounded-full">
-                                            <img src={mockSession.user.image} alt={mockSession.user.name || "User"} />
+                                            <img src={user.user_metadata.avatar_url} alt={user.user_metadata?.full_name || "User"} />
                                         </div>
                                     ) : (
                                         <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-content">
-                                            {mockSession.user.name?.charAt(0) || mockSession.user.email?.charAt(0) || "U"}
+                                            {user.user_metadata?.full_name?.charAt(0) || user.email?.charAt(0) || "U"}
                                         </div>
                                     )}
                                 </label>
                                 <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
                                     <li><a onClick={() => setShowSettings(true)}>Settings</a></li>
-                                    <li><a onClick={mockLogout}>Sign Out</a></li>
+                                    <li><a onClick={signOut}>Sign Out</a></li>
                                 </ul>
                             </div>
                         ) : (
@@ -389,12 +375,6 @@ export const PomodoroTimer: React.FC = () => {
                                 Settings
                             </button>
                             
-                            {/* Debug button for showing pause prompt */}
-                            <button
-                                className="btn btn-warning w-full mt-2 transform transition-all duration-200 hover:scale-105 active:scale-95"
-                                onClick={() => setShowPausePrompt(true)}>
-                                Show Pause Prompt (Dev)
-                            </button>
                         </div>
                     </div>
 
@@ -439,10 +419,10 @@ export const PomodoroTimer: React.FC = () => {
                         currentTheme={currentTheme as ThemeName}
                         soundsEnabled={soundsEnabled}
                         youtubePlayerVisible={youtubePlayerVisible}
-                        mockSession={mockSession}
-                        onPurchasePremium={handlePurchasePremium}
+                        isPremium={isPremium}
                         onSave={handleSettingsChange}
                         onClose={() => setShowSettings(false)}
+                        onPurchasePremium={handlePurchasePremium}
                         onShowAuthModal={() => {
                             setShowSettings(false);
                             setShowAuthModal(true);
@@ -452,9 +432,7 @@ export const PomodoroTimer: React.FC = () => {
                 {showPausePrompt && <PausePrompt onAction={handlePausePromptAction} currentTheme={currentTheme as ThemeName} />}
                 {showAuthModal && (
                     <AuthModal
-                        onClose={() => setShowAuthModal(false)}
-                        // For frontend development, add a mock login function
-                        onLogin={mockLogin}
+                        onClose={handleAuthModalClose}
                     />
                 )}
                 {showVideoLibrary && (
