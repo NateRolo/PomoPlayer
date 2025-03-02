@@ -1,4 +1,11 @@
-export type ThemeName = "light" | "dark" | "cupcake" | "forest";
+export type ThemeName = 
+  // Free themes
+  "light" | "dark" | "cupcake" | "forest" |
+  // Premium themes
+  "bumblebee" | "emerald" | "corporate" | "synthwave" | "retro" | "cyberpunk" |
+  "valentine" | "halloween" | "garden" | "aqua" | "lofi" | "pastel" | "fantasy" |
+  "wireframe" | "black" | "luxury" | "dracula" | "cmyk" | "autumn" | "business" |
+  "acid" | "lemonade" | "night" | "coffee" | "winter";
 export type SessionType = 'work' | 'shortBreak' | 'longBreak';
 
 // Common color structure that applies to all session types
