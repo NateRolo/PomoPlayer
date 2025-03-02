@@ -5,8 +5,9 @@ import { useState, useEffect, useCallback } from "react"
 import YouTube from "react-youtube"
 import { Settings } from "./Settings"
 import { PausePrompt } from "./PausePrompt"
-import type { YouTubePlayer } from 'react-youtube';
+import type { YouTubePlayer } from 'react-youtube'
 import { getSessionColors, ThemeName } from '../types/theme'
+import { AuthModal } from "./AuthModal"
 
 type SessionType = "work" | "shortBreak" | "longBreak"
 
@@ -34,6 +35,9 @@ export const PomodoroTimer: React.FC = () => {
     const [currentTheme, setCurrentTheme] = useState('dark')
     const [soundsEnabled, setSoundsEnabled] = useState(true)
     const [youtubePlayerVisible, setYoutubePlayerVisible] = useState(true)
+    const [showAuthModal, setShowAuthModal] = useState(false);
+    const [mockSession, setMockSession] = useState<null | { user: { name: string, email: string, image?: string, isPremium: boolean } }>(null);
+
 
     const handleSessionComplete = useCallback(() => {
         const newSessionCount = sessionCount + 1
@@ -239,7 +243,41 @@ export const PomodoroTimer: React.FC = () => {
         }
     }
 
+    const mockLogin = (name: string, email: string) => {
+        setMockSession({
+            user: {
+                name,
+                email,
+                isPremium: false
+            }
+        });
+        setShowAuthModal(false);
+    };
+
+    const mockLogout = () => {
+        setMockSession(null);
+    };
+    
     const currentThemeColors = getSessionColors(currentTheme as ThemeName, sessionType);
+
+    
+    const handlePurchasePremium = () => {
+        
+        console.log("Purchase premium clicked");
+        
+        setTimeout(() => {
+            setMockSession(prev => prev ? {
+                ...prev,
+                user: {
+                    ...prev.user,
+                    isPremium: true
+                }
+            } : null);
+            
+            // Show a success message
+            alert("Premium purchase successful! You now have access to all themes.");
+        }, 2000);
+    };
 
     return (
         <>
@@ -258,6 +296,35 @@ export const PomodoroTimer: React.FC = () => {
                                 : "Long Break"}
                     </div>
 
+
+                    <div className="absolute top-4 right-4">
+                        {mockSession ? (
+                            <div className="dropdown dropdown-end">
+                                <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
+                                    {mockSession.user.image ? (
+                                        <div className="w-10 rounded-full">
+                                            <img src={mockSession.user.image} alt={mockSession.user.name || "User"} />
+                                        </div>
+                                    ) : (
+                                        <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-content">
+                                            {mockSession.user.name?.charAt(0) || mockSession.user.email?.charAt(0) || "U"}
+                                        </div>
+                                    )}
+                                </label>
+                                <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+                                    <li><a onClick={() => setShowSettings(true)}>Settings</a></li>
+                                    <li><a onClick={mockLogout}>Sign Out</a></li>
+                                </ul>
+                            </div>
+                        ) : (
+                            <button
+                                className="btn btn-ghost btn-sm"
+                                onClick={() => setShowAuthModal(true)}
+                            >
+                                Sign In
+                            </button>
+                        )}
+                    </div>
                     {/* Session type selector buttons */}
                     <div className="w-full flex flex-wrap justify-center gap-3 mb-10">
                         <div className="w-full max-w-md mx-auto grid grid-cols-3 gap-2">
@@ -356,11 +423,20 @@ export const PomodoroTimer: React.FC = () => {
                         currentTheme={currentTheme as ThemeName}
                         soundsEnabled={soundsEnabled}
                         youtubePlayerVisible={youtubePlayerVisible}
+                        mockSession={mockSession}
+                        onPurchasePremium={handlePurchasePremium}
                         onSave={handleSettingsChange}
                         onClose={() => setShowSettings(false)}
                     />
                 )}
                 {showPausePrompt && <PausePrompt onAction={handlePausePromptAction} />}
+                {showAuthModal && (
+                    <AuthModal
+                        onClose={() => setShowAuthModal(false)}
+                        // For frontend development, add a mock login function
+                        onLogin={mockLogin}
+                    />
+                )}
             </div>
         </>
     )
