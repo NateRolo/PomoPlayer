@@ -193,20 +193,20 @@ export const Settings: React.FC<SettingsProps> = ({
                                             onChange={(e) => setSelectedTheme(e.target.value as ThemeName)}
                                             className="select select-bordered w-full"
                                         >
-                                            <optgroup label="Free Themes">
+                                            <optgroup label="Basic Themes">
                                                 <option value="dark">Dark</option>
-                                            <option value="light">Light</option>
-                                            <option value="cupcake">Cupcake</option>
-                                            <option value="forest">Forest</option>
+                                                <option value="light">Light</option>
+                                                <option value="cupcake">Cupcake</option>
+                                                <option value="forest">Forest</option>
                                             </optgroup>
                                             
-                                            <optgroup label="Premium Themes" disabled={!user}>
-                                            <option value="bumblebee">Bumblebee</option>
-                                            <option value="emerald">Emerald</option>
-                                            <option value="corporate">Corporate</option>
-                                            <option value="synthwave">Synthwave</option>
-                                            <option value="retro">Retro</option>
-                                            <option value="cyberpunk">Cyberpunk</option>
+                                            <optgroup label="Premium Themes" disabled={!isPremium}>
+                                                <option value="bumblebee">Bumblebee</option>
+                                                <option value="emerald">Emerald</option>
+                                                <option value="corporate">Corporate</option>
+                                                <option value="synthwave">Synthwave</option>
+                                                <option value="retro">Retro</option>
+                                                <option value="cyberpunk">Cyberpunk</option>
                                                 <option value="valentine">Valentine</option>
                                                 <option value="halloween">Halloween</option>
                                                 <option value="garden">Garden</option>
@@ -214,7 +214,7 @@ export const Settings: React.FC<SettingsProps> = ({
                                             </optgroup>
                                         </select>
                                         
-                                        {!user && (
+                                        {!isPremium && (
                                             <div className="flex items-center gap-2 text-info mt-2">
                                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                                 <span className="text-xs">Upgrade to access all premium themes</span>

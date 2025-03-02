@@ -36,6 +36,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log("Session data:", data.session ? "Session exists" : "No session");
         setSession(data.session);
         setUser(data.session?.user ?? null);
+        
+        // Check premium status if user is logged in
+        if (data.session?.user) {
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('is_premium')
+            .eq('id', data.session.user.id)
+            .single();
+          
+          if (profileError) {
+            console.error("Error fetching premium status:", profileError);
+          } else {
+            console.log("Premium status from DB:", profileData?.is_premium);
+            setIsPremium(profileData?.is_premium || false);
+          }
+        }
       } catch (error) {
         console.error('Error getting session:', error);
       } finally {
@@ -69,9 +85,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const setPremiumStatus = async (status: boolean) => {
-    setIsPremium(status);
-    // In a real implementation, you would update this in your database
-    console.log(`Premium status set to: ${status}`);
+    try {
+      if (!user) return;
+      
+      // Update in database
+      const { error } = await supabase
+        .from('profiles')
+        .update({ is_premium: status })
+        .eq('id', user.id);
+        
+      if (error) {
+        console.error("Error updating premium status:", error);
+        return;
+      }
+      
+      // Update local state
+      setIsPremium(status);
+      console.log(`Premium status set to: ${status}`);
+    } catch (error) {
+      console.error("Error setting premium status:", error);
+    }
   };
 
   const value = {
