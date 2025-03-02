@@ -48,29 +48,42 @@ export function useUserSettings() {
       try {
         if (user) {
           // Load from API
-          const response = await fetch('/api/user-settings');
-          
-          if (!response.ok) {
-            throw new Error('Failed to load settings');
+          try {
+            const response = await fetch('/api/user-settings');
+            
+            if (response.ok) {
+              const data = await response.json();
+              
+              // Transform the data from the API format to our app format
+              setSettings({
+                durations: {
+                  work: data.work_duration || DEFAULT_SETTINGS.durations.work,
+                  shortBreak: data.short_break_duration || DEFAULT_SETTINGS.durations.shortBreak,
+                  longBreak: data.long_break_duration || DEFAULT_SETTINGS.durations.longBreak,
+                },
+                sessionsUntilLongBreak: data.sessions_until_long_break || DEFAULT_SETTINGS.sessionsUntilLongBreak,
+                youtubeUrl: data.youtube_url || DEFAULT_SETTINGS.youtubeUrl,
+                pausePromptEnabled: data.pause_prompt_enabled ?? DEFAULT_SETTINGS.pausePromptEnabled,
+                pausePromptDelay: data.pause_prompt_delay || DEFAULT_SETTINGS.pausePromptDelay,
+                theme: data.theme || DEFAULT_SETTINGS.theme,
+                soundsEnabled: data.sounds_enabled ?? DEFAULT_SETTINGS.soundsEnabled,
+                youtubePlayerVisible: data.youtube_player_visible ?? DEFAULT_SETTINGS.youtubePlayerVisible,
+              });
+              return;
+            } else {
+              console.warn(`Failed to load settings from API: ${response.status} ${response.statusText}`);
+            }
+          } catch (apiError) {
+            console.error("API error when loading settings:", apiError);
           }
           
-          const data = await response.json();
+          // Fall back to localStorage if API fails
+          console.log("Falling back to localStorage for settings");
+          const storedSettings = localStorage.getItem('userSettings');
           
-          // Transform the data from the API format to our app format
-          setSettings({
-            durations: {
-              work: data.work_duration,
-              shortBreak: data.short_break_duration,
-              longBreak: data.long_break_duration,
-            },
-            sessionsUntilLongBreak: data.sessions_until_long_break,
-            youtubeUrl: data.youtube_url,
-            pausePromptEnabled: data.pause_prompt_enabled,
-            pausePromptDelay: data.pause_prompt_delay,
-            theme: data.theme,
-            soundsEnabled: data.sounds_enabled,
-            youtubePlayerVisible: data.youtube_player_visible,
-          });
+          if (storedSettings) {
+            setSettings(JSON.parse(storedSettings));
+          }
         } else {
           // Load from localStorage
           const storedSettings = localStorage.getItem('userSettings');

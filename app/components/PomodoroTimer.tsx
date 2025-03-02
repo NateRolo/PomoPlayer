@@ -340,7 +340,7 @@ export const PomodoroTimer: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="relative mb-12">
+                    <div className="relative mb-10">
                         <div className={`text-8xl md:text-9xl font-bold tracking-tight 
                             ${currentThemeColors.text}`}>
                             {formatTime(timeLeft)}
