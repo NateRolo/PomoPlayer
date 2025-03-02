@@ -1,39 +1,39 @@
-import type React from "react"
+"use client";
+
+import { getSessionColors } from "../types/theme";
+import { ThemeName } from "../types/theme";
 
 interface PausePromptProps {
     onAction: (action: string) => void
+    currentTheme: ThemeName
 }
 
-export const PausePrompt: React.FC<PausePromptProps> = ({ onAction }) => {
+export const PausePrompt: React.FC<PausePromptProps> = ({ onAction, currentTheme }) => {
+    const sessionColors = getSessionColors(currentTheme, 'work');
+    
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div className="bg-white p-6 rounded-lg">
-                <h2 className="text-2xl font-bold mb-4">Timer Paused</h2>
-                <p className="mb-4">What would you like to do?</p>
-                <div className="space-y-2">
-                    <button
-                        className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                        onClick={() => onAction("resume")}
+        <div className="modal modal-open">
+            <div className={`modal-box ${sessionColors.background}`}>
+                <h3 className={`font-bold text-lg ${sessionColors.text}`}>Timer Paused</h3>
+                <p className={`py-4 ${sessionColors.text}`}>Would you like to continue your session?</p>
+                <div className="modal-action flex justify-between w-full">
+                    <button 
+                        className={`btn btn-secondary`}
+                        onClick={() => onAction('reset')}
                     >
-                        Resume
+                        Reset
                     </button>
-                    <button
-                        className="w-full bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-                        onClick={() => onAction("end")}
+                    <button 
+                        className={`btn btn-neutral`}
+                        onClick={() => onAction('remind')}
                     >
-                        End Session
+                        Remind me in 2 minutes
                     </button>
-                    <button
-                        className="w-full bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded"
-                        onClick={() => onAction("extend")}
+                    <button 
+                        className={`btn btn-accent flex-1 max-w-[40%]`}
+                        onClick={() => onAction('continue')}
                     >
-                        Extend Pause (+5 mins)
-                    </button>
-                    <button
-                        className="w-full bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
-                        onClick={() => onAction("reprompt")}
-                    >
-                        Reprompt in 2 minutes
+                        Continue
                     </button>
                 </div>
             </div>

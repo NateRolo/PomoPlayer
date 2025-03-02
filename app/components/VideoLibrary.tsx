@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface Video {
   id: string;
@@ -14,24 +14,35 @@ interface VideoLibraryProps {
 }
 
 export const VideoLibrary: React.FC<VideoLibraryProps> = ({ onSelectVideo, onClose }) => {
-  // Mock data for frontend development
-  const [videos, setVideos] = useState<Video[]>([
-    { 
-      id: "1", 
-      title: "Lofi Hip Hop Radio", 
-      url: "https://www.youtube.com/watch?v=jfKfPfyJRdk" 
-    },
-    { 
-      id: "2", 
-      title: "Relaxing Jazz Music", 
-      url: "https://www.youtube.com/watch?v=neV3EPgvZ3g" 
-    },
-    { 
-      id: "3", 
-      title: "Classical Music for Studying", 
-      url: "https://www.youtube.com/watch?v=1Cv0kCB59J0" 
+  // Load videos from localStorage or use default mock data
+  const [videos, setVideos] = useState<Video[]>(() => {
+    const savedVideos = localStorage.getItem('savedVideos');
+    if (savedVideos) {
+      return JSON.parse(savedVideos);
     }
-  ]);
+    return [
+      { 
+        id: "1", 
+        title: "Lofi Hip Hop Radio", 
+        url: "https://www.youtube.com/watch?v=jfKfPfyJRdk" 
+      },
+      { 
+        id: "2", 
+        title: "Relaxing Jazz Music", 
+        url: "https://www.youtube.com/watch?v=neV3EPgvZ3g" 
+      },
+      { 
+        id: "3", 
+        title: "Classical Music for Studying", 
+        url: "https://www.youtube.com/watch?v=1Cv0kCB59J0" 
+      }
+    ];
+  });
+  
+  // Save videos to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('savedVideos', JSON.stringify(videos));
+  }, [videos]);
   
   const [newVideoUrl, setNewVideoUrl] = useState("");
   const [newVideoTitle, setNewVideoTitle] = useState("");

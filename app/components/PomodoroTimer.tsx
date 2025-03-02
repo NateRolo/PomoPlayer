@@ -8,6 +8,7 @@ import { PausePrompt } from "./PausePrompt"
 import type { YouTubePlayer } from 'react-youtube'
 import { getSessionColors, ThemeName } from '../types/theme'
 import { AuthModal } from "./AuthModal"
+import { VideoLibrary } from "./VideoLibrary"
 
 type SessionType = "work" | "shortBreak" | "longBreak"
 
@@ -37,6 +38,7 @@ export const PomodoroTimer: React.FC = () => {
     const [youtubePlayerVisible, setYoutubePlayerVisible] = useState(true)
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [mockSession, setMockSession] = useState<null | { user: { name: string, email: string, image?: string, isPremium: boolean } }>(null);
+    const [showVideoLibrary, setShowVideoLibrary] = useState(false);
 
 
     const handleSessionComplete = useCallback(() => {
@@ -329,26 +331,23 @@ export const PomodoroTimer: React.FC = () => {
                     <div className="w-full flex flex-wrap justify-center gap-3 mb-10">
                         <div className="w-full max-w-md mx-auto grid grid-cols-3 gap-2">
                             <button
-                                className={`w-full px-4 py-2 rounded-lg font-medium transition-all duration-200
-                                    ${sessionType === "work" 
-                                        ? "bg-primary text-primary-content hover:bg-primary-focus" 
-                                        : "bg-base-200 text-base-content hover:bg-primary-focus"}`}
+                                className={`btn w-full ${sessionType === "work" 
+                                    ? "btn-primary" 
+                                    : "btn-ghost hover:btn-primary"}`}
                                 onClick={() => changeSessionType("work")}>
                                 Work
                             </button>
                             <button
-                                className={`w-full px-4 py-2 rounded-lg font-medium transition-all duration-200
-                                    ${sessionType === "shortBreak" 
-                                        ? "bg-primary text-primary-content hover:bg-primary-focus" 
-                                        : "bg-base-300 text-base-content hover:bg-primary hover:text-primary-content"}`}
+                                className={`btn w-full ${sessionType === "shortBreak"
+                                    ? "btn-primary"
+                                    : "btn-ghost hover:btn-primary"}`} 
                                 onClick={() => changeSessionType("shortBreak")}>
                                 Break
                             </button>
                             <button
-                                className={`w-full px-4 py-2 rounded-lg font-medium transition-all duration-200
-                                    ${sessionType === "longBreak" 
-                                        ? "bg-primary text-primary-content hover:bg-primary-focus" 
-                                        : "bg-base-300 text-base-content hover:bg-primary hover:text-primary-content"}`}
+                                className={`btn w-full ${sessionType === "longBreak"
+                                    ? "btn-primary"
+                                    : "btn-ghost hover:btn-primary"}`}
                                 onClick={() => changeSessionType("longBreak")}>
                                 Long Break
                             </button>
@@ -366,49 +365,66 @@ export const PomodoroTimer: React.FC = () => {
 
                     <div className="w-full flex flex-wrap justify-center gap-3 mb-10">
                         <button
-                            className="w-full max-w-md mx-auto transform transition-all duration-200 px-9 py-4 rounded-lg font-semibold mb-2 bg-accent text-accent-content hover:bg-accent-focus hover:scale-105 active:scale-95"
+                            className="btn btn-accent w-full max-w-md mx-auto mb-2 py-4 transform transition-all duration-200 hover:scale-105 active:scale-95"
                             onClick={toggleTimer}>
                             {isActive ? "Pause" : "Start"}
                         </button>
 
                         <div className="w-full max-w-md mx-auto grid grid-cols-3 gap-2">
                             <button
-                                className="w-full px-4 py-2 rounded-lg font-medium bg-neutral text-neutral-content shadow-sm border transform transition-all duration-200 hover:scale-105 active:scale-95
-                                hover:bg-error hover:text-error-content hover:border-error"
+                                className="btn btn-neutral w-full hover:btn-secondary transform transition-all duration-200 hover:scale-105 active:scale-95"
                                 onClick={resetTimer}>
                                 Reset
                             </button>
 
                             <button
-                                className="w-full px-4 py-2 rounded-lg font-medium bg-neutral text-neutral-content shadow-sm border transform transition-all duration-200 hover:scale-105 active:scale-95
-                                hover:bg-warning hover:text-warning-content hover:border-warning"
+                                className="btn btn-neutral w-full hover:btn-warning transform transition-all duration-200 hover:scale-105 active:scale-95"
                                 onClick={skipSession}>
                                 Skip
                             </button>
 
                             <button
-                                className="w-full px-4 py-2 rounded-lg font-medium bg-neutral text-neutral-content shadow-sm border transform transition-all duration-200 hover:scale-105 active:scale-95
-                                hover:bg-info hover:text-info-content hover:border-info"
+                                className="btn btn-neutral w-full hover:btn-info transform transition-all duration-200 hover:scale-105 active:scale-95"
                                 onClick={() => setShowSettings(true)}>
                                 Settings
+                            </button>
+                            
+                            {/* Debug button for showing pause prompt */}
+                            <button
+                                className="btn btn-warning w-full mt-2 transform transition-all duration-200 hover:scale-105 active:scale-95"
+                                onClick={() => setShowPausePrompt(true)}>
+                                Show Pause Prompt (Dev)
                             </button>
                         </div>
                     </div>
 
                     <div className="w-full max-w-2xl rounded-t-xl overflow-hidden">
                         {youtubePlayerVisible && (
-                            <YouTube
-                                videoId={youtubeUrl.split("v=")[1]}
-                                opts={{
-                                    height: "100%",
-                                    width: "100%",
-                                    playerVars: {
-                                        autoplay: isActive ? 1 : 0,
-                                    },
-                                }}
-                                onReady={onPlayerReady}
-                                className="w-full aspect-video"
-                            />
+                            <div className="mt-4 relative">
+                                <div className="absolute top-2 right-2 z-10">
+                                    <button
+                                        className="btn btn-sm btn-ghost bg-base-100 bg-opacity-70"
+                                        onClick={() => setShowVideoLibrary(true)}
+                                        title="Video Library"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <YouTube
+                                    videoId={youtubeUrl.split("v=")[1]}
+                                    opts={{
+                                        height: "100%",
+                                        width: "100%",
+                                        playerVars: {
+                                            autoplay: isActive ? 1 : 0,
+                                        },
+                                    }}
+                                    onReady={onPlayerReady}
+                                    className="w-full aspect-video"
+                                />
+                            </div>
                         )}
                     </div>
                 </div>
@@ -427,14 +443,29 @@ export const PomodoroTimer: React.FC = () => {
                         onPurchasePremium={handlePurchasePremium}
                         onSave={handleSettingsChange}
                         onClose={() => setShowSettings(false)}
+                        onShowAuthModal={() => {
+                            setShowSettings(false);
+                            setShowAuthModal(true);
+                        }}
                     />
                 )}
-                {showPausePrompt && <PausePrompt onAction={handlePausePromptAction} />}
+                {showPausePrompt && <PausePrompt onAction={handlePausePromptAction} currentTheme={currentTheme as ThemeName} />}
                 {showAuthModal && (
                     <AuthModal
                         onClose={() => setShowAuthModal(false)}
                         // For frontend development, add a mock login function
                         onLogin={mockLogin}
+                    />
+                )}
+                {showVideoLibrary && (
+                    <VideoLibrary
+                        onSelectVideo={(url) => {
+                            setYoutubeUrl(url);
+                            setShowVideoLibrary(false);
+                            // Save to localStorage
+                            localStorage.setItem('youtubeUrl', url);
+                        }}
+                        onClose={() => setShowVideoLibrary(false)}
                     />
                 )}
             </div>
