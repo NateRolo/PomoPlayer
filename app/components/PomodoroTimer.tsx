@@ -19,7 +19,7 @@ export const DEFAULT_DURATIONS = {
     shortBreak: 5 * 60,
     longBreak: 15 * 60,
 }
-
+// WHEN USER LOGS OUT THE PAGE SHOULD CHANGE TO DEFAULT THEME
 const DEFAULT_YOUTUBE_URL = "https://www.youtube.com/watch?v=jfKfPfyJRdk"
 
 export const PomodoroTimer: React.FC = () => {
