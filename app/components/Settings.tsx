@@ -33,7 +33,7 @@ const DEFAULT_SETTINGS = {
     youtubeUrl: "https://www.youtube.com/watch?v=jfKfPfyJRdk",
     pausePromptEnabled: true,
     pausePromptDelay: 2,
-    theme: "light" as ThemeName
+    theme: "dark" as ThemeName
 }
 
 export const Settings: React.FC<SettingsProps> = ({ 
@@ -105,7 +105,7 @@ export const Settings: React.FC<SettingsProps> = ({
             setNewYoutubeUrl(DEFAULT_SETTINGS.youtubeUrl);
             setNewPausePromptEnabled(DEFAULT_SETTINGS.pausePromptEnabled);
             setNewPausePromptDelay(DEFAULT_SETTINGS.pausePromptDelay);
-            setSelectedTheme('light');
+            setSelectedTheme('dark');
 
             onSave(
                 DEFAULT_SETTINGS.durations,
@@ -119,16 +119,21 @@ export const Settings: React.FC<SettingsProps> = ({
     }
 
     return (
-        <div className="modal modal-open">
-            <div className={`modal-box w-[800px] h-[600px] flex ${sessionColors.background}`}>
+        <div className="modal modal-open" onClick={(e) => {
+            // Close modal when clicking the backdrop (outside the modal box)
+            if (e.target === e.currentTarget) {
+                onClose();
+            }
+        }}>
+            <div className={`modal-box w-full max-w-3xl h-[500px] md:h-[600px] flex flex-col md:flex-row ${sessionColors.background}`}>
                 {/* Left sidebar with tabs */}
-                <div className="menu bg-base-200 w-48 rounded-l-lg">
+                <div className="md:w-44 w-full flex md:flex-col overflow-x-auto md:overflow-x-visible bg-base-200 rounded-t-lg md:rounded-t-none md:rounded-l-lg p-2">
                     {tabs.map((tab) => (
                         <button
                             key={tab.id}
-                            className={`menu-item ${
+                            className={`whitespace-nowrap md:whitespace-normal flex-shrink-0 md:flex-shrink py-3 px-4 mb-1 rounded-lg text-left ${
                                 activeTab === tab.id 
-                                    ? `${sessionColors.button.background} ${sessionColors.text}`
+                                    ? `bg-neutral text-neutral-content`
                                     : 'text-base-content hover:bg-base-300'
                             }`}
                             onClick={() => setActiveTab(tab.id)}
@@ -139,31 +144,39 @@ export const Settings: React.FC<SettingsProps> = ({
                 </div>
 
                 {/* Main content area */}
-                <div className="flex-1 flex flex-col h-full">
-                    <div className="flex-1 p-6 overflow-y-auto">
+                <div className="flex-1 flex flex-col h-full overflow-hidden">
+                    <div className="flex-1 p-4 md:p-8 overflow-y-auto">
                         {activeTab === 'general' && (
                             <div className="space-y-4">
-                                <h3 className={`text-lg font-semibold ${sessionColors.text}`}>
+                                <h3 className={`text-xl font-semibold ${sessionColors.text}`}>
                                     General Settings
                                 </h3>
-                                <div className="space-y-4">
-                                    <div className="form-control">
-                                        <label className="label">
-                                            <span className={`label-text ${sessionColors.text}`}>Theme</span>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="form-control md:col-span-2">
+                                        <label className="label py-1">
+                                            <span className={`label-text text-base ${sessionColors.text}`}>Theme</span>
                                         </label>
                                         <select
                                             value={selectedTheme}
                                             onChange={(e) => setSelectedTheme(e.target.value as ThemeName)}
-                                            className="select select-bordered w-full"
+                                            className="select select-bordered w-full py-2"
                                         >
-                                            <option value="light">Light</option>
                                             <option value="dark">Dark</option>
+                                            <option value="light">Light</option>
+                                            <option value="cupcake">Cupcake</option>
+                                            <option value="forest">Forest</option>
+                                            <option value="bumblebee">Bumblebee</option>
+                                            <option value="emerald">Emerald</option>
+                                            <option value="corporate">Corporate</option>
+                                            <option value="synthwave">Synthwave</option>
+                                            <option value="retro">Retro</option>
+                                            <option value="cyberpunk">Cyberpunk</option>
                                         </select>
                                     </div>
 
-                                    <div className="form-control">
-                                        <label className="label cursor-pointer">
-                                            <span className={`label-text ${sessionColors.text}`}>
+                                    <div className="form-control md:col-span-2">
+                                        <label className="label cursor-pointer justify-between py-1">
+                                            <span className={`label-text text-base ${sessionColors.text}`}>
                                                 Enable Pause Prompts
                                             </span>
                                             <input
@@ -176,9 +189,9 @@ export const Settings: React.FC<SettingsProps> = ({
                                     </div>
                                     
                                     {newPausePromptEnabled && (
-                                        <div className="form-control">
-                                            <label className="label">
-                                                <span className={`label-text ${sessionColors.text}`}>
+                                        <div className="form-control md:col-span-2">
+                                            <label className="label py-1">
+                                                <span className={`label-text text-base ${sessionColors.text}`}>
                                                     Show Prompt After (minutes)
                                                 </span>
                                             </label>
@@ -187,7 +200,7 @@ export const Settings: React.FC<SettingsProps> = ({
                                                 min="1"
                                                 value={newPausePromptDelay}
                                                 onChange={(e) => setNewPausePromptDelay(Number(e.target.value))}
-                                                className="input input-bordered w-full"
+                                                className="input input-bordered w-full py-2"
                                             />
                                         </div>
                                     )}
@@ -197,51 +210,51 @@ export const Settings: React.FC<SettingsProps> = ({
                         
                         {activeTab === 'timers' && (
                             <div className="space-y-4">
-                                <h3 className={`text-lg font-semibold ${sessionColors.text}`}>Timer Settings</h3>
-                                <div className="space-y-4">
+                                <h3 className={`text-xl font-semibold ${sessionColors.text}`}>Timer Settings</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="form-control">
-                                        <label className="label">
-                                            <span className="label-text">Work Duration</span>
+                                        <label className="label py-1">
+                                            <span className="label-text text-base">Work Duration (min)</span>
                                         </label>
                                         <input
                                             type="number"
                                             value={workDuration}
                                             onChange={(e) => handleDurationChange("work", e.target.value)}
-                                            className="input input-bordered w-full"
+                                            className="input input-bordered w-full py-2"
                                         />
                                     </div>
                                     <div className="form-control">
-                                        <label className="label">
-                                            <span className="label-text">Short Break Duration</span>
+                                        <label className="label py-1">
+                                            <span className="label-text text-base">Short Break (min)</span>
                                         </label>
                                         <input
                                             type="number"
                                             value={shortBreakDuration}
                                             onChange={(e) => handleDurationChange("shortBreak", e.target.value)}
-                                            className="input input-bordered w-full"
+                                            className="input input-bordered w-full py-2"
                                         />
                                     </div>
                                     <div className="form-control">
-                                        <label className="label">
-                                            <span className="label-text">Long Break Duration</span>
+                                        <label className="label py-1">
+                                            <span className="label-text text-base">Long Break (min)</span>
                                         </label>
                                         <input
                                             type="number"
                                             value={longBreakDuration}
                                             onChange={(e) => handleDurationChange("longBreak", e.target.value)}
-                                            className="input input-bordered w-full"
+                                            className="input input-bordered w-full py-2"
                                         />
                                     </div>
                                     <div className="form-control">
-                                        <label className="label">
-                                            <span className="label-text">Sessions Until Long Break</span>
+                                        <label className="label py-1">
+                                            <span className="label-text text-base">Sessions Until Long Break</span>
                                         </label>
                                         <input
                                             type="number"
                                             min="1"
                                             value={newSessionsUntilLongBreak}
                                             onChange={(e) => setNewSessionsUntilLongBreak(Number(e.target.value))}
-                                            className="input input-bordered w-full"
+                                            className="input input-bordered w-full py-2"
                                         />
                                     </div>
                                 </div>
@@ -250,47 +263,55 @@ export const Settings: React.FC<SettingsProps> = ({
                         
                         {activeTab === 'sound' && (
                             <div className="space-y-4">
-                                <h3 className="text-lg font-semibold">Sound Settings</h3>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">YouTube URL</label>
-                                    <input
-                                        type="text"
-                                        value={newYoutubeUrl}
-                                        onChange={(e) => setNewYoutubeUrl(e.target.value)}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                    />
+                                <h3 className="text-xl font-semibold">Sound Settings</h3>
+                                <div className="grid grid-cols-1 gap-4">
+                                    <div className="form-control">
+                                        <label className="label py-1">
+                                            <span className="label-text text-base">YouTube URL</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={newYoutubeUrl}
+                                            onChange={(e) => setNewYoutubeUrl(e.target.value)}
+                                            className="input input-bordered w-full py-2"
+                                        />
+                                    </div> 
                                 </div>
                             </div>
                         )}
                         
                         {activeTab === 'account' && (
                             <div className="space-y-4">
-                                <h3 className="text-lg font-semibold">Account Settings</h3>
-                                {/* Add account settings here */}
+                                <h3 className="text-xl font-semibold">Account Settings</h3>
+                                <div className="grid grid-cols-1 gap-4">
+                                    <p className="text-sm text-base-content/70">No account settings available yet.</p>
+                                </div>
                             </div>
                         )}
                     </div>
 
                     {/* Footer */}
-                    <div className="modal-action px-6 py-4 bg-base-200">
-                        <button
-                            className="btn btn-error mr-auto"
-                            onClick={handleReset}
-                        >
-                            Reset
-                        </button>
-                        <button 
-                            className="btn btn-ghost" 
-                            onClick={onClose}
-                        >
-                            Cancel
-                        </button>
-                        <button 
-                            className={`btn ${sessionColors.button.background}`}
-                            onClick={handleSave}
-                        >
-                            Save Changes
-                        </button>
+                    <div className="modal-action px-4 md:px-8 py-4 border-t border-base-300">
+                        <div className="w-full flex flex-row items-center gap-2">
+                            <button
+                                className="btn btn-error btn-md flex-1"
+                                onClick={handleReset}
+                            >
+                                Reset
+                            </button>
+                            <button 
+                                className="btn btn-base-200 btn-md flex-1" 
+                                onClick={onClose}
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                className="btn-primary btn btn-md flex-1"
+                                onClick={handleSave}
+                            >
+                                Save Changes
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

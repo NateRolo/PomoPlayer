@@ -31,7 +31,7 @@ export const PomodoroTimer: React.FC = () => {
     const [sessionsUntilLongBreak, setSessionsUntilLongBreak] = useState(4)
     const [pausePromptEnabled, setPausePromptEnabled] = useState(true)
     const [pausePromptDelay, setPausePromptDelay] = useState(2)
-    const [currentTheme, setCurrentTheme] = useState('light')
+    const [currentTheme, setCurrentTheme] = useState('dark')
 
     const handleSessionComplete = useCallback(() => {
         const newSessionCount = sessionCount + 1
@@ -49,12 +49,13 @@ export const PomodoroTimer: React.FC = () => {
         setSessionType(nextSessionType)
         setTimeLeft(durations[nextSessionType])
         playSound();
-        if(sessionCount > sessionsUntilLongBreak + 1) {
+        if (sessionCount > sessionsUntilLongBreak + 1) {
             setSessionCount(0);
         }
     }, [sessionCount, sessionType, durations, sessionsUntilLongBreak])
 
     useEffect(() => {
+        // Load all stored settings
         const storedDurations = localStorage.getItem("pomodoroDurations")
         if (storedDurations) {
             setDurations(JSON.parse(storedDurations))
@@ -67,7 +68,7 @@ export const PomodoroTimer: React.FC = () => {
 
         const storedPausePromptEnabled = localStorage.getItem("pausePromptEnabled")
         const storedPausePromptDelay = localStorage.getItem("pausePromptDelay")
-        
+
         if (storedPausePromptEnabled !== null) {
             setPausePromptEnabled(JSON.parse(storedPausePromptEnabled))
         }
@@ -75,14 +76,11 @@ export const PomodoroTimer: React.FC = () => {
             setPausePromptDelay(JSON.parse(storedPausePromptDelay))
         }
 
-        const storedTheme = localStorage.getItem("theme") as ThemeName || 'light'
+        // Load and set theme
+        const storedTheme = localStorage.getItem("theme") as ThemeName || "dark";
         setCurrentTheme(storedTheme);
         document.documentElement.setAttribute("data-theme", storedTheme);
-    }, []);
-
-    useEffect(() => {
-        document.documentElement.setAttribute("data-theme", currentTheme)
-    }, [currentTheme]);
+    }, []); // Run once on mount
 
     useEffect(() => {
         let interval: NodeJS.Timeout | null = null
@@ -154,13 +152,16 @@ export const PomodoroTimer: React.FC = () => {
     }
 
     const handleSettingsChange = (
-        newDurations: typeof DEFAULT_DURATIONS, 
-        newYoutubeUrl: string, 
+        newDurations: typeof DEFAULT_DURATIONS,
+        newYoutubeUrl: string,
         newSessionsUntilLongBreak: number,
         newPausePromptEnabled: boolean,
         newPausePromptDelay: number,
-        newTheme: string
+        newTheme: ThemeName
     ) => {
+        // Add debug log
+        console.log("Setting theme to:", newTheme);
+
         // Check if current session duration has changed
         const currentDurationChanged = durations[sessionType] !== newDurations[sessionType];
 
@@ -171,6 +172,7 @@ export const PomodoroTimer: React.FC = () => {
         setPausePromptEnabled(newPausePromptEnabled)
         setPausePromptDelay(newPausePromptDelay)
         setCurrentTheme(newTheme)
+        document.documentElement.setAttribute("data-theme", newTheme)
 
         // Save all settings to localStorage
         localStorage.setItem("pomodoroDurations", JSON.stringify(newDurations))
@@ -187,8 +189,6 @@ export const PomodoroTimer: React.FC = () => {
 
         setShowSettings(false)
     }
-
-    const currentThemeColors = getSessionColors(currentTheme as ThemeName, sessionType);
 
     const handlePausePromptAction = (action: string) => {
         switch (action) {
@@ -208,22 +208,64 @@ export const PomodoroTimer: React.FC = () => {
         setShowPausePrompt(false)
     }
 
+    // New function to handle session type change
+    const changeSessionType = (newSessionType: SessionType) => {
+        // Only change if it's a different session type
+        if (newSessionType !== sessionType) {
+            setSessionType(newSessionType)
+            setTimeLeft(durations[newSessionType])
+            setIsActive(false)
+            if (player) player.pauseVideo()
+        }
+    }
+
+    const currentThemeColors = getSessionColors(currentTheme as ThemeName, sessionType);
+
     return (
         <>
-            <div className={`min-h-screen flex flex-col items-center justify-center p-4 transition-all duration-700 
+            <div className={`min-h-screen flex flex-col items-center justify-center p-4 pt-16 transition-all duration-700 
                 ${currentThemeColors.background}`}>
                 <div className="w-full max-w-4xl mx-auto flex flex-col items-center">
                     <h1 className={`text-4xl font-bold mb-2 bg-clip-text bg-gradient-to-r 
                         ${currentThemeColors.text}`}>
                         PomoPlayer
                     </h1>
-
-                    <div className={`text-l font-medium mb-8 opacity-80 ${currentThemeColors.text}`}>
+                    <div className={`text-l font-medium mb-4 opacity-80 ${currentThemeColors.text}`}>
                         {sessionType === "work"
                             ? `Work Session ${Math.floor(sessionCount / 2) + 1}/${sessionsUntilLongBreak}`
                             : sessionType === "shortBreak"
                                 ? "Short Break"
                                 : "Long Break"}
+                    </div>
+
+                    {/* Session type selector buttons */}
+                    <div className="w-full flex flex-wrap justify-center gap-3 mb-10">
+                        <div className="w-full max-w-md mx-auto grid grid-cols-3 gap-2">
+                            <button
+                                className={`w-full px-4 py-2 rounded-lg font-medium transition-all duration-200
+                                    ${sessionType === "work" 
+                                        ? "bg-primary text-primary-content hover:bg-primary-focus" 
+                                        : "bg-base-200 text-base-content hover:bg-primary-focus"}`}
+                                onClick={() => changeSessionType("work")}>
+                                Work
+                            </button>
+                            <button
+                                className={`w-full px-4 py-2 rounded-lg font-medium transition-all duration-200
+                                    ${sessionType === "shortBreak" 
+                                        ? "bg-primary text-primary-content hover:bg-primary-focus" 
+                                        : "bg-base-300 text-base-content hover:bg-primary hover:text-primary-content"}`}
+                                onClick={() => changeSessionType("shortBreak")}>
+                                Break
+                            </button>
+                            <button
+                                className={`w-full px-4 py-2 rounded-lg font-medium transition-all duration-200
+                                    ${sessionType === "longBreak" 
+                                        ? "bg-primary text-primary-content hover:bg-primary-focus" 
+                                        : "bg-base-300 text-base-content hover:bg-primary hover:text-primary-content"}`}
+                                onClick={() => changeSessionType("longBreak")}>
+                                Long Break
+                            </button>
+                        </div>
                     </div>
 
                     <div className="relative mb-12">
@@ -235,41 +277,42 @@ export const PomodoroTimer: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="flex flex-wrap justify-center gap-3 mb-12">
+                    <div className="w-full flex flex-wrap justify-center gap-3 mb-10">
                         <button
-                            className={`transform transition-all duration-200 px-6 py-3 rounded-lg font-semibold
-                                ${isActive
-                                    ? "bg-red-500 hover:bg-red-600 text-white"
-                                    : "bg-white hover:bg-gray-50 text-gray-800 shadow-sm border"}
-                                hover:scale-105 active:scale-95`}
+                            className="w-full max-w-md mx-auto transform transition-all duration-200 px-9 py-4 rounded-lg font-semibold mb-2 bg-accent text-accent-content hover:bg-accent-focus hover:scale-105 active:scale-95"
                             onClick={toggleTimer}>
                             {isActive ? "Pause" : "Start"}
                         </button>
 
-                        <button
-                            className="px-6 py-3 rounded-lg font-semibold bg-white hover:bg-gray-50 text-gray-600 shadow-sm border transform transition-all duration-200 hover:scale-105 active:scale-95"
-                            onClick={resetTimer}>
-                            Reset
-                        </button>
+                        <div className="w-full max-w-md mx-auto grid grid-cols-3 gap-2">
+                            <button
+                                className="w-full px-4 py-2 rounded-lg font-medium bg-neutral text-neutral-content shadow-sm border transform transition-all duration-200 hover:scale-105 active:scale-95
+                                hover:bg-error hover:text-error-content hover:border-error"
+                                onClick={resetTimer}>
+                                Reset
+                            </button>
 
-                        <button
-                            className="px-6 py-3 rounded-lg font-semibold bg-white hover:bg-gray-50 text-gray-600 shadow-sm border transform transition-all duration-200 hover:scale-105 active:scale-95"
-                            onClick={skipSession}>
-                            Skip
-                        </button>
+                            <button
+                                className="w-full px-4 py-2 rounded-lg font-medium bg-neutral text-neutral-content shadow-sm border transform transition-all duration-200 hover:scale-105 active:scale-95
+                                hover:bg-warning hover:text-warning-content hover:border-warning"
+                                onClick={skipSession}>
+                                Skip
+                            </button>
 
-                        <button
-                            className="px-6 py-3 rounded-lg font-semibold bg-white hover:bg-gray-50 text-gray-600 shadow-sm border transform transition-all duration-200 hover:scale-105 active:scale-95"
-                            onClick={() => setShowSettings(true)}>
-                            Settings
-                        </button>
+                            <button
+                                className="w-full px-4 py-2 rounded-lg font-medium bg-neutral text-neutral-content shadow-sm border transform transition-all duration-200 hover:scale-105 active:scale-95
+                                hover:bg-info hover:text-info-content hover:border-info"
+                                onClick={() => setShowSettings(true)}>
+                                Settings
+                            </button>
+                        </div>
                     </div>
 
-                    <div className="w-full max-w-3xl rounded-t-xl overflow-hidden">
+                    <div className="w-full max-w-2xl rounded-t-xl overflow-hidden">
                         <YouTube
                             videoId={youtubeUrl.split("v=")[1]}
                             opts={{
-                                height: "395",
+                                height: "100%",
                                 width: "100%",
                                 playerVars: {
                                     autoplay: isActive ? 1 : 0,
