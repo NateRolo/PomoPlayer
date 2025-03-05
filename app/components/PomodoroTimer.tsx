@@ -19,7 +19,11 @@ export const DEFAULT_DURATIONS = {
     shortBreak: 5 * 60,
     longBreak: 15 * 60,
 }
+
 // WHEN USER LOGS OUT THE PAGE SHOULD CHANGE TO DEFAULT THEME
+// when user sets work sessions above 6 it doesn't function as intended
+// include user setting that sets dark mode during runtime 
+
 const DEFAULT_YOUTUBE_URL = "https://www.youtube.com/watch?v=jfKfPfyJRdk"
 
 export const PomodoroTimer: React.FC = () => {
@@ -44,24 +48,34 @@ export const PomodoroTimer: React.FC = () => {
     const [showVideoLibrary, setShowVideoLibrary] = useState(false)
 
     const handleSessionComplete = useCallback(() => {
-        const newSessionCount = sessionCount + 1
-        setSessionCount(newSessionCount)
-        localStorage.setItem("sessionCount", newSessionCount.toString())
-        localStorage.setItem("sessionDate", new Date().toDateString())
-
-        let nextSessionType: SessionType
+        let nextSessionType: SessionType;
+        let newSessionCount = sessionCount;
+        
         if (sessionType === "work") {
-            nextSessionType = newSessionCount > sessionsUntilLongBreak + 1 ? "longBreak" : "shortBreak";
+            // Increment work session count
+            newSessionCount = sessionCount + 1;
+            
+            // Check if we've completed the required number of work sessions for a long break
+            if (newSessionCount >= sessionsUntilLongBreak) {
+                nextSessionType = "longBreak";
+            } else {
+                nextSessionType = "shortBreak";
+            }
+        } else if (sessionType === "longBreak") {
+            // After a long break, reset the session count and start a new work session
+            newSessionCount = 0;
+            nextSessionType = "work";
         } else {
+            // After a short break, start a new work session
+            // Don't increment the count here as it should only increment after work sessions
             nextSessionType = "work";
         }
-
-        setSessionType(nextSessionType)
-        setTimeLeft(durations[nextSessionType])
+        
+        // Update state
+        setSessionCount(newSessionCount);
+        setSessionType(nextSessionType);
+        setTimeLeft(durations[nextSessionType]);
         playSound();
-        if (sessionCount > sessionsUntilLongBreak + 1) {
-            setSessionCount(0);
-        }
     }, [sessionCount, sessionType, durations, sessionsUntilLongBreak])
 
     useEffect(() => {
@@ -279,7 +293,7 @@ export const PomodoroTimer: React.FC = () => {
                     </h1>
                     <div className={`text-l font-medium mb-4 opacity-80 ${currentThemeColors.text}`}>
                         {sessionType === "work"
-                            ? `Work Session ${Math.floor(sessionCount / 2) + 1}/${sessionsUntilLongBreak}`
+                            ? `Work Session ${sessionCount + 1}/${sessionsUntilLongBreak}`
                             : sessionType === "shortBreak"
                                 ? "Short Break"
                                 : "Long Break"}
