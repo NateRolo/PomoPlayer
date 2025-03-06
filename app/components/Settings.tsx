@@ -411,6 +411,21 @@ export const Settings: React.FC<SettingsProps> = ({
                                                 <option value="halloween">Halloween</option>
                                                 <option value="garden">Garden</option>
                                                 <option value="aqua">Aqua</option>
+                                                <option value="lofi">Lofi</option>
+                                                <option value="pastel">Pastel</option>
+                                                <option value="fantasy">Fantasy</option>
+                                                <option value="wireframe">Wireframe</option>
+                                                <option value="black">Black</option>
+                                                <option value="luxury">Luxury</option>
+                                                <option value="dracula">Dracula</option>
+                                                <option value="cmyk">CMYK</option>
+                                                <option value="autumn">Autumn</option>
+                                                <option value="business">Business</option>
+                                                <option value="acid">Acid</option>
+                                                <option value="lemonade">Lemonade</option>
+                                                <option value="night">Night</option>
+                                                <option value="coffee">Coffee</option>
+                                                <option value="winter">Winter</option>                                                
                                                 
                                             </optgroup>
                                         </select>
