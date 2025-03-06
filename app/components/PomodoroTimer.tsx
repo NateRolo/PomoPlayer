@@ -76,7 +76,9 @@ export const PomodoroTimer: React.FC = () => {
         setSessionType(nextSessionType);
         setTimeLeft(durations[nextSessionType]);
         playSound();
-    }, [sessionCount, sessionType, durations, sessionsUntilLongBreak])
+        setIsActive(false);
+        if(player) player.pauseVideo();
+    }, [sessionCount, sessionType, durations, sessionsUntilLongBreak, isActive, player])
 
     useEffect(() => {
         // Load all stored settings
