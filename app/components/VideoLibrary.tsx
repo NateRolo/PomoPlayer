@@ -46,19 +46,54 @@ export const VideoLibrary: React.FC<VideoLibraryProps> = ({ onSelectVideo, onClo
   
   const [newVideoUrl, setNewVideoUrl] = useState("");
   const [newVideoTitle, setNewVideoTitle] = useState("");
+  const [youtubeUrlError, setYoutubeUrlError] = useState<string | null>(null);
+  
+  const validateYoutubeUrl = (url: string): boolean => {
+    if (!url) {
+      setYoutubeUrlError("URL is required");
+      return false;
+    }
+    
+    // Check if it's a valid YouTube URL
+    const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/;
+    if (!youtubeRegex.test(url)) {
+      setYoutubeUrlError("Please enter a valid YouTube URL");
+      return false;
+    }
+    
+    // Check if it contains a video ID
+    const videoIdRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+    const match = url.match(videoIdRegex);
+    
+    if (!match) {
+      setYoutubeUrlError("Please enter a valid YouTube video URL");
+      return false;
+    }
+    
+    // Valid YouTube URL with video ID
+    setYoutubeUrlError(null);
+    return true;
+  };
+  
+  const handleYoutubeUrlChange = (value: string) => {
+    setNewVideoUrl(value);
+    
+    if (!value) {
+      setYoutubeUrlError(null);
+      return;
+    }
+    
+    validateYoutubeUrl(value);
+  };
   
   const handleAddVideo = () => {
-    if (!newVideoUrl) return;
+    if (!newVideoUrl) {
+      setYoutubeUrlError("URL is required");
+      return;
+    }
     
-    // Extract video ID from URL
-    const videoId = newVideoUrl.includes("youtube.com/watch?v=") 
-      ? newVideoUrl.split("v=")[1].split("&")[0]
-      : newVideoUrl.includes("youtu.be/")
-        ? newVideoUrl.split("youtu.be/")[1].split("?")[0]
-        : "";
-    
-    if (!videoId) {
-      alert("Please enter a valid YouTube URL");
+    // Validate the YouTube URL
+    if (!validateYoutubeUrl(newVideoUrl)) {
       return;
     }
     
@@ -71,6 +106,7 @@ export const VideoLibrary: React.FC<VideoLibraryProps> = ({ onSelectVideo, onClo
     setVideos([...videos, newVideo]);
     setNewVideoUrl("");
     setNewVideoTitle("");
+    setYoutubeUrlError(null);
   };
   
   const handleDeleteVideo = (id: string) => {
@@ -97,19 +133,26 @@ export const VideoLibrary: React.FC<VideoLibraryProps> = ({ onSelectVideo, onClo
               type="text"
               placeholder="YouTube URL"
               value={newVideoUrl}
-              onChange={(e) => setNewVideoUrl(e.target.value)}
-              className="input input-bordered flex-1"
+              onChange={(e) => handleYoutubeUrlChange(e.target.value)}
+              className={`input input-bordered flex-1 ${youtubeUrlError ? 'input-error' : ''}`}
             />
             <button 
               className="btn btn-primary"
               onClick={handleAddVideo}
+              disabled={!!youtubeUrlError}
             >
               Add
             </button>
           </div>
-          <p className="text-xs opacity-70">
-            Enter a YouTube video URL (e.g., https://www.youtube.com/watch?v=jfKfPfyJRdk)
-          </p>
+          {youtubeUrlError ? (
+            <p className="text-xs text-error mt-1">
+              {youtubeUrlError}
+            </p>
+          ) : (
+            <p className="text-xs opacity-70">
+              Enter a YouTube video URL (e.g., https://www.youtube.com/watch?v=jfKfPfyJRdk)
+            </p>
+          )}
         </div>
         
         <div className="overflow-x-auto">
