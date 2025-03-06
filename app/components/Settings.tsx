@@ -18,7 +18,7 @@ interface SettingsProps {
     youtubePlayerVisible: boolean
     isPremium: boolean
     onSave: (
-        durations: typeof DEFAULT_DURATIONS, 
+        durations: typeof DEFAULT_DURATIONS,
         youtubeUrl: string,
         sessionsUntilLongBreak: number,
         pausePromptEnabled: boolean,
@@ -47,9 +47,9 @@ const DEFAULT_SETTINGS = {
     youtubePlayerVisible: true
 }
 
-export const Settings: React.FC<SettingsProps> = ({ 
-    durations, 
-    youtubeUrl, 
+export const Settings: React.FC<SettingsProps> = ({
+    durations,
+    youtubeUrl,
     sessionsUntilLongBreak,
     pausePromptEnabled,
     pausePromptDelay,
@@ -57,7 +57,7 @@ export const Settings: React.FC<SettingsProps> = ({
     soundsEnabled,
     youtubePlayerVisible,
     isPremium,
-    onSave, 
+    onSave,
     onClose,
     onPurchasePremium,
     onShowAuthModal
@@ -73,8 +73,13 @@ export const Settings: React.FC<SettingsProps> = ({
     const [selectedTheme, setSelectedTheme] = useState<ThemeName>(currentTheme as ThemeName)
     const [newSoundsEnabled, setNewSoundsEnabled] = useState(soundsEnabled)
     const [newYoutubePlayerVisible, setNewYoutubePlayerVisible] = useState(youtubePlayerVisible)
-    const [showResetConfirmation, setShowResetConfirmation] = useState(false)
     const [isBrowser, setIsBrowser] = useState(false)
+    const [workDurationError, setWorkDurationError] = useState<string | null>(null)
+    const [shortBreakDurationError, setShortBreakDurationError] = useState<string | null>(null)
+    const [longBreakDurationError, setLongBreakDurationError] = useState<string | null>(null)
+    const [pausePromptDelayError, setPausePromptDelayError] = useState<string | null>(null)
+    const [workSessionError, setWorkSessionError] = useState<string | null>(null)
+    const [youtubeUrlError, setYoutubeUrlError] = useState<string | null>(null)
     const { user } = useAuth()
 
     // Get current theme colors
@@ -84,19 +89,158 @@ export const Settings: React.FC<SettingsProps> = ({
         setIsBrowser(true)
     }, [])
 
-    const handleDurationChange = (key: keyof typeof durations, value: string) => {
-        const numValue = Number.parseInt(value, 10)
-        switch (key) {
-            case 'work':
-                setWorkDuration(numValue)
-                break
-            case 'shortBreak':
-                setShortBreakDuration(numValue)
-                break
-            case 'longBreak':
-                setLongBreakDuration(numValue)
-                break
+    const handleWorkDurationChange = (value: string) => {
+        const numValue = parseInt(value, 10);
+        
+        // Validate work duration
+        if (isNaN(numValue)) {
+            setWorkDurationError("Please enter a valid number");
+        } else if (numValue < 1) {
+            setWorkDurationError("Minimum duration is 1 minute");
+        } else if (numValue > 180) { // 3 hours in minutes
+            setWorkDurationError("Maximum duration is 3 hours");
+        } else {
+            setWorkDurationError(null);
         }
+        
+        setWorkDuration(numValue);
+    }
+
+    const handleShortBreakDurationChange = (value: string) => {
+        const numValue = parseInt(value, 10);
+        
+        // Validate short break duration
+        if (isNaN(numValue)) {
+            setShortBreakDurationError("Please enter a valid number");
+        } else if (numValue < 1) {
+            setShortBreakDurationError("Minimum duration is 1 minute");
+        } else if (numValue > 30) {
+            setShortBreakDurationError("Maximum duration is 30 minutes");
+        } else {
+            setShortBreakDurationError(null);
+        }
+        
+        setShortBreakDuration(numValue);
+    }
+
+    const handleLongBreakDurationChange = (value: string) => {
+        const numValue = parseInt(value, 10);
+        
+        // Validate long break duration
+        if (isNaN(numValue)) {
+            setLongBreakDurationError("Please enter a valid number");
+        } else if (numValue < 1) {
+            setLongBreakDurationError("Minimum duration is 1 minute");
+        } else if (numValue > 60) {
+            setLongBreakDurationError("Maximum duration is 60 minutes");
+        } else {
+            setLongBreakDurationError(null);
+        }
+        
+        setLongBreakDuration(numValue);
+    }
+
+    const handlePausePromptDelayChange = (value: string) => {
+        const numValue = parseInt(value, 10);
+        
+        // Validate the pause prompt delay
+        if (isNaN(numValue)) {
+            setPausePromptDelayError("Please enter a valid number");
+        } else if (numValue < 1) {
+            setPausePromptDelayError("Minimum delay is 1 minute");
+        } else if (numValue > 10) {
+            setPausePromptDelayError("Maximum delay is 10 minutes");
+        } else {
+            setPausePromptDelayError(null);
+        }
+        
+        setNewPausePromptDelay(numValue);
+    }
+
+    const handleWorkSessionChange = (value: string) => {
+        const numValue = parseInt(value, 10);
+        
+        // Validate work sessions until long break
+        if (isNaN(numValue)) {
+            setWorkSessionError("Please enter a valid number");
+        } else if (numValue < 1) {
+            setWorkSessionError("Minimum sessions is 1");
+        } else if (numValue > 10) {
+            setWorkSessionError("Maximum sessions is 10");
+        } else {
+            setWorkSessionError(null);
+        }
+        
+        setNewSessionsUntilLongBreak(numValue);
+    }
+
+    const handleYoutubeUrlChange = (value: string) => {
+        // Set the new URL
+        setNewYoutubeUrl(value);
+        
+        // Validate YouTube URL
+        if (!value) {
+            // Empty URL is allowed (will use default)
+            setYoutubeUrlError(null);
+            return;
+        }
+        
+        // Check if it's a valid YouTube URL
+        const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/;
+        if (!youtubeRegex.test(value)) {
+            setYoutubeUrlError("Please enter a valid YouTube URL");
+            return;
+        }
+        
+        // Check if it contains a video ID
+        const videoIdRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+        const match = value.match(videoIdRegex);
+        
+        if (!match) {
+            setYoutubeUrlError("Please enter a valid YouTube video URL");
+            return;
+        }
+        
+        // Valid YouTube URL with video ID
+        setYoutubeUrlError(null);
+    }
+
+    const validateDuration = (value: number) => {
+        // Check if value is null or undefined
+        if (value === null || value === undefined) {
+            return {
+                isValid: false,
+                errorMessage: "Duration cannot be empty"
+            };
+        }
+        
+        if (isNaN(value)) {
+            return {
+                isValid: false,
+                errorMessage: "Duration must be a number"
+            };
+        }
+        
+        const durationInSeconds = value * 60;
+        
+        if (durationInSeconds < 60) {
+            return {
+                isValid: false,
+                errorMessage: "Duration must be at least 1 minute"
+            };
+        }
+        
+        if (durationInSeconds > 10800) {
+            return {
+                isValid: false,
+                errorMessage: "Duration must be less than 3 hours"
+            };
+        }
+        
+        return {
+            isValid: true,
+            errorMessage: null
+        };
     }
 
     const tabs = [
@@ -107,6 +251,63 @@ export const Settings: React.FC<SettingsProps> = ({
     ]
 
     const handleSave = () => {
+        // Check for any validation errors
+        if (workDurationError || shortBreakDurationError || longBreakDurationError || 
+            pausePromptDelayError || workSessionError || youtubeUrlError) {
+            // If there are any validation errors, show an alert and prevent saving
+            alert("Please fix all validation errors before saving.");
+            return;
+        }
+        
+        // Additional validation using validateDuration function
+        const workValidation = validateDuration(workDuration);
+        const shortBreakValidation = validateDuration(shortBreakDuration);
+        const longBreakValidation = validateDuration(longBreakDuration);
+        const pausePromptValidation = validateDuration(newPausePromptDelay);
+        
+        // Check if any validation failed
+        if (!workValidation.isValid) {
+            setWorkDurationError(workValidation.errorMessage);
+            return;
+        }
+        
+        if (!shortBreakValidation.isValid) {
+            setShortBreakDurationError(shortBreakValidation.errorMessage);
+            return;
+        }
+        
+        if (!longBreakValidation.isValid) {
+            setLongBreakDurationError(longBreakValidation.errorMessage);
+            return;
+        }
+        
+        if (!pausePromptValidation.isValid) {
+            setPausePromptDelayError(pausePromptValidation.errorMessage);
+            return;
+        }
+        
+        // Validate work sessions
+        if (newSessionsUntilLongBreak < 1 || newSessionsUntilLongBreak > 10 || isNaN(newSessionsUntilLongBreak)) {
+            setWorkSessionError("Work sessions must be between 1 and 10");
+            return;
+        }
+        
+        // Validate YouTube URL if not empty
+        if (newYoutubeUrl) {
+            const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/;
+            if (!youtubeRegex.test(newYoutubeUrl)) {
+                setYoutubeUrlError("Please enter a valid YouTube URL");
+                return;
+            }
+            
+            const videoIdRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+            if (!videoIdRegex.test(newYoutubeUrl)) {
+                setYoutubeUrlError("Please enter a valid YouTube video URL");
+                return;
+            }
+        }
+        
+        // If all validations pass, save the settings
         onSave(
             {
                 work: workDuration * 60,
@@ -124,10 +325,11 @@ export const Settings: React.FC<SettingsProps> = ({
     }
 
     const handleReset = () => {
-        setShowResetConfirmation(true)
-    }
-
-    const confirmReset = () => {
+        // Use window.confirm instead of custom modal
+        const confirmed = window.confirm("Are you sure you want to reset all settings to default values?");
+        
+        if (confirmed) {
+            // If confirmed, reset all settings
             setWorkDuration(Math.floor(DEFAULT_SETTINGS.durations.work / 60));
             setShortBreakDuration(Math.floor(DEFAULT_SETTINGS.durations.shortBreak / 60));
             setLongBreakDuration(Math.floor(DEFAULT_SETTINGS.durations.longBreak / 60));
@@ -135,9 +337,9 @@ export const Settings: React.FC<SettingsProps> = ({
             setNewYoutubeUrl(DEFAULT_SETTINGS.youtubeUrl);
             setNewPausePromptEnabled(DEFAULT_SETTINGS.pausePromptEnabled);
             setNewPausePromptDelay(DEFAULT_SETTINGS.pausePromptDelay);
-        setSelectedTheme('dark');
-        setNewSoundsEnabled(DEFAULT_SETTINGS.soundsEnabled);
-        setNewYoutubePlayerVisible(DEFAULT_SETTINGS.youtubePlayerVisible);
+            setSelectedTheme('dark');
+            setNewSoundsEnabled(DEFAULT_SETTINGS.soundsEnabled);
+            setNewYoutubePlayerVisible(DEFAULT_SETTINGS.youtubePlayerVisible);
 
             onSave(
                 DEFAULT_SETTINGS.durations,
@@ -145,12 +347,11 @@ export const Settings: React.FC<SettingsProps> = ({
                 DEFAULT_SETTINGS.sessionsUntilLongBreak,
                 DEFAULT_SETTINGS.pausePromptEnabled,
                 DEFAULT_SETTINGS.pausePromptDelay,
-            DEFAULT_SETTINGS.theme,
-            DEFAULT_SETTINGS.soundsEnabled,
-            DEFAULT_SETTINGS.youtubePlayerVisible
+                DEFAULT_SETTINGS.theme,
+                DEFAULT_SETTINGS.soundsEnabled,
+                DEFAULT_SETTINGS.youtubePlayerVisible
             )
-        
-        setShowResetConfirmation(false)
+        }
     }
 
     return (
@@ -164,27 +365,26 @@ export const Settings: React.FC<SettingsProps> = ({
                 <div className="modal-box w-full max-w-none h-full sm:max-w-3xl sm:h-[600px] p-0 flex flex-col overflow-hidden">
                     {/* Tabs at the top */}
                     <div className="tabs tabs-boxed bg-base-200 rounded-t-lg p-2 gap-1">
-                    {tabs.map((tab) => (
+                        {tabs.map((tab) => (
                             <a
-                            key={tab.id}
-                                className={`tab tab-sm md:tab-md transition-all duration-200 ${
-                                    activeTab === tab.id ? 'tab-active' : ''
-                            }`}
-                            onClick={() => setActiveTab(tab.id)}
-                        >
-                            {tab.label}
+                                key={tab.id}
+                                className={`tab tab-sm md:tab-md transition-all duration-200 ${activeTab === tab.id ? 'tab-active' : ''
+                                    }`}
+                                onClick={() => setActiveTab(tab.id)}
+                            >
+                                {tab.label}
                             </a>
-                    ))}
-                </div>
+                        ))}
+                    </div>
 
-                {/* Main content area */}
+                    {/* Main content area */}
                     <div className="flex-1 overflow-y-auto p-4 md:p-6">
                         {activeTab === 'general' && (
                             <div className="space-y-6">
                                 <h3 className="text-xl font-semibold">
                                     General Settings
                                 </h3>
-                                
+
                                 <div className="card bg-base-200">
                                     <div className="card-body p-4 gap-2">
                                         <h2 className="card-title text-base">Theme</h2>
@@ -199,7 +399,7 @@ export const Settings: React.FC<SettingsProps> = ({
                                                 <option value="cupcake">Cupcake</option>
                                                 <option value="forest">Forest</option>
                                             </optgroup>
-                                            
+
                                             <optgroup label="Premium Themes" disabled={!isPremium}>
                                                 <option value="bumblebee">Bumblebee</option>
                                                 <option value="emerald">Emerald</option>
@@ -211,9 +411,10 @@ export const Settings: React.FC<SettingsProps> = ({
                                                 <option value="halloween">Halloween</option>
                                                 <option value="garden">Garden</option>
                                                 <option value="aqua">Aqua</option>
+                                                
                                             </optgroup>
                                         </select>
-                                        
+
                                         {!isPremium && (
                                             <div className="flex items-center gap-2 text-info mt-2">
                                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -221,21 +422,21 @@ export const Settings: React.FC<SettingsProps> = ({
                                             </div>
                                         )}
                                     </div>
-                                    </div>
+                                </div>
 
                                 <div className="card bg-base-200">
                                     <div className="card-body p-4">
                                         <h2 className="card-title text-base">Display Options</h2>
-                                    <div className="form-control">
+                                        <div className="form-control">
                                             <label className="label cursor-pointer justify-between">
                                                 <span className="label-text">Show YouTube Player</span>
-                                            <input
-                                                type="checkbox"
+                                                <input
+                                                    type="checkbox"
                                                     checked={newYoutubePlayerVisible}
                                                     onChange={(e) => setNewYoutubePlayerVisible(e.target.checked)}
-                                                className="toggle toggle-primary"
-                                            />
-                                        </label>
+                                                    className="toggle toggle-primary"
+                                                />
+                                            </label>
                                         </div>
                                     </div>
                                 </div>
@@ -247,11 +448,11 @@ export const Settings: React.FC<SettingsProps> = ({
                                 <h3 className="text-xl font-semibold">
                                     Timer Settings
                                 </h3>
-                                
+
                                 <div className="card bg-base-200">
                                     <div className="card-body p-4">
                                         <h2 className="card-title text-base">Session Durations</h2>
-                                        
+
                                         <div className="form-control">
                                             <label className="label">
                                                 <span className="label-text">Work Duration (minutes)</span>
@@ -259,68 +460,88 @@ export const Settings: React.FC<SettingsProps> = ({
                                             <input
                                                 type="number"
                                                 min="1"
-                                                max="60"
+                                                max="180"
                                                 value={workDuration}
-                                                onChange={(e) => handleDurationChange('work', e.target.value)}
-                                                className="input input-bordered w-full"
+                                                onChange={(e) => handleWorkDurationChange(e.target.value)}
+                                                className={`input input-bordered w-full ${workDurationError ? 'input-error' : ''}`}
                                             />
+                                            {workDurationError && (
+                                                <label className="label">
+                                                    <span className="label-text-alt text-error">{workDurationError}</span>
+                                                </label>
+                                            )}
                                         </div>
-                        
-                                    <div className="form-control">
-                                        <label className="label">
+
+                                        <div className="form-control">
+                                            <label className="label">
                                                 <span className="label-text">Short Break Duration (minutes)</span>
-                                        </label>
-                        <input
-                            type="number"
+                                            </label>
+                                            <input
+                                                type="number"
                                                 min="1"
                                                 max="30"
                                                 value={shortBreakDuration}
-                                                onChange={(e) => handleDurationChange('shortBreak', e.target.value)}
-                                            className="input input-bordered w-full"
-                        />
-                    </div>
-                                        
-                                    <div className="form-control">
-                                        <label className="label">
+                                                onChange={(e) => handleShortBreakDurationChange(e.target.value)}
+                                                className={`input input-bordered w-full ${shortBreakDurationError ? 'input-error' : ''}`}
+                                            />
+                                            {shortBreakDurationError && (
+                                                <label className="label">
+                                                    <span className="label-text-alt text-error">{shortBreakDurationError}</span>
+                                                </label>
+                                            )}
+                                        </div>
+
+                                        <div className="form-control">
+                                            <label className="label">
                                                 <span className="label-text">Long Break Duration (minutes)</span>
-                                        </label>
-                        <input
-                            type="number"
+                                            </label>
+                                            <input
+                                                type="number"
                                                 min="1"
                                                 max="60"
                                                 value={longBreakDuration}
-                                                onChange={(e) => handleDurationChange('longBreak', e.target.value)}
-                                            className="input input-bordered w-full"
-                        />
-                    </div>
+                                                onChange={(e) => handleLongBreakDurationChange(e.target.value)}
+                                                className={`input input-bordered w-full ${longBreakDurationError ? 'input-error' : ''}`}
+                                            />
+                                            {longBreakDurationError && (
+                                                <label className="label">
+                                                    <span className="label-text-alt text-error">{longBreakDurationError}</span>
+                                                </label>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
-                                
+
                                 <div className="card bg-base-200">
                                     <div className="card-body p-4">
                                         <h2 className="card-title text-base">Session Cycle</h2>
-                                        
-                                    <div className="form-control">
-                                        <label className="label">
+
+                                        <div className="form-control">
+                                            <label className="label">
                                                 <span className="label-text">Work Sessions Until Long Break</span>
-                                        </label>
-                        <input
-                            type="number"
+                                            </label>
+                                            <input
+                                                type="number"
                                                 min="1"
                                                 max="10"
                                                 value={newSessionsUntilLongBreak}
-                                                onChange={(e) => setNewSessionsUntilLongBreak(parseInt(e.target.value))}
-                                            className="input input-bordered w-full"
-                        />
-                    </div>
+                                                onChange={(e) => handleWorkSessionChange(e.target.value)}
+                                                className={`input input-bordered w-full ${workSessionError ? 'input-error' : ''}`}
+                                            />
+                                            {workSessionError && (
+                                                <label className="label">
+                                                    <span className="label-text-alt text-error">{workSessionError}</span>
+                                                </label>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
-                                
+
                                 <div className="card bg-base-200">
                                     <div className="card-body p-4">
                                         <h2 className="card-title text-base">Pause Prompts</h2>
-                                        
-                                    <div className="form-control">
+
+                                        <div className="form-control">
                                             <label className="label cursor-pointer justify-between">
                                                 <span className="label-text">Enable Pause Prompts</span>
                                                 <input
@@ -331,37 +552,42 @@ export const Settings: React.FC<SettingsProps> = ({
                                                 />
                                             </label>
                                         </div>
-                                        
+
                                         {newPausePromptEnabled && (
                                             <div className="form-control mt-2">
-                                        <label className="label">
+                                                <label className="label">
                                                     <span className="label-text">Prompt Delay (minutes)</span>
-                                        </label>
-                        <input
-                            type="number"
-                            min="1"
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    min="1"
                                                     max="10"
                                                     value={newPausePromptDelay}
-                                                    onChange={(e) => setNewPausePromptDelay(parseInt(e.target.value))}
-                                            className="input input-bordered w-full"
-                        />
+                                                    onChange={(e) => handlePausePromptDelayChange(e.target.value)}
+                                                    className={`input input-bordered w-full ${pausePromptDelayError ? 'input-error' : ''}`}
+                                                />
+                                                {pausePromptDelayError && (
+                                                    <label className="label">
+                                                        <span className="label-text-alt text-error">{pausePromptDelayError}</span>
+                                                    </label>
+                                                )}
                                             </div>
                                         )}
-                    </div>
+                                    </div>
                                 </div>
                             </div>
                         )}
-                        
+
                         {activeTab === 'sound' && (
                             <div className="space-y-6">
                                 <h3 className="text-xl font-semibold">
                                     Sound Settings
                                 </h3>
-                                
+
                                 <div className="card bg-base-200">
                                     <div className="card-body p-4">
                                         <h2 className="card-title text-base">Sound Options</h2>
-                                        
+
                                         <div className="form-control">
                                             <label className="label cursor-pointer justify-between">
                                                 <span className="label-text">Enable Sounds</span>
@@ -375,37 +601,42 @@ export const Settings: React.FC<SettingsProps> = ({
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <div className="card bg-base-200">
                                     <div className="card-body p-4">
                                         <h2 className="card-title text-base">YouTube URL</h2>
-                                        
+
                                         <div className="form-control">
                                             <label className="label">
                                                 <span className="label-text">YouTube Video URL</span>
                                             </label>
-                        <input
-                            type="text"
-                            value={newYoutubeUrl}
-                            onChange={(e) => setNewYoutubeUrl(e.target.value)}
+                                            <input
+                                                type="text"
+                                                value={newYoutubeUrl}
+                                                onChange={(e) => handleYoutubeUrlChange(e.target.value)}
                                                 placeholder="https://www.youtube.com/watch?v=..."
-                                                className="input input-bordered w-full"
-                        />
+                                                className={`input input-bordered w-full ${youtubeUrlError ? 'input-error' : ''}`}
+                                            />
+                                            {youtubeUrlError && (
+                                                <label className="label">
+                                                    <span className="label-text-alt text-error">{youtubeUrlError}</span>
+                                                </label>
+                                            )}
                                             <label className="label">
                                                 <span className="label-text-alt">Enter a YouTube URL for background music</span>
                                             </label>
                                         </div>
                                     </div>
-                    </div> 
-                </div>
+                                </div>
+                            </div>
                         )}
-                        
+
                         {activeTab === 'account' && (
                             <div className="space-y-6">
                                 <h3 className="text-xl font-semibold">
                                     Account Settings
                                 </h3>
-                                
+
                                 {user ? (
                                     <div className="space-y-6">
                                         <div className="card bg-base-200">
@@ -414,7 +645,7 @@ export const Settings: React.FC<SettingsProps> = ({
                                                     {user.user_metadata?.avatar_url ? (
                                                         <div className="avatar">
                                                             <div className="w-16 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
-                                                                <img 
+                                                                <img
                                                                     src={user.user_metadata.avatar_url}
                                                                     alt={user.user_metadata?.full_name || "User"}
                                                                 />
@@ -436,7 +667,7 @@ export const Settings: React.FC<SettingsProps> = ({
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
                                         <div className="card bg-base-200">
                                             <div className="card-body p-4">
                                                 <h2 className="card-title text-base">Premium Themes</h2>
@@ -448,7 +679,7 @@ export const Settings: React.FC<SettingsProps> = ({
                                                 ) : (
                                                     <div className="space-y-3">
                                                         <p>Unlock all 30 premium themes for a one-time payment of $2 CAD</p>
-                                                        <button 
+                                                        <button
                                                             className="btn btn-primary btn-sm"
                                                             onClick={onPurchasePremium}
                                                         >
@@ -463,7 +694,7 @@ export const Settings: React.FC<SettingsProps> = ({
                                     <div className="card bg-base-200">
                                         <div className="card-body p-4">
                                             <p>Sign in to access account features and premium themes</p>
-                                            <button 
+                                            <button
                                                 className="btn btn-primary btn-sm mt-2"
                                                 onClick={onShowAuthModal}
                                             >
@@ -486,33 +717,6 @@ export const Settings: React.FC<SettingsProps> = ({
                     </div>
                 </div>
             </div>
-
-            {/* Reset Confirmation Modal */}
-            {showResetConfirmation && (
-                isBrowser && createPortal(
-                    <div className="fixed inset-0 bg-black bg-opacity-60 z-[100] flex items-center justify-center" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
-                        <div className={`modal-box ${sessionColors.background} max-w-md mx-auto relative`} onClick={(e) => e.stopPropagation()}>
-                            <h3 className={`font-bold text-lg ${sessionColors.text}`}>Reset Settings</h3>
-                            <p className={`py-4 ${sessionColors.text}`}>Are you sure you want to reset all settings to default values?</p>
-                            <div className="modal-action flex justify-between w-full">
-                        <button
-                                    className="btn btn-neutral"
-                                    onClick={() => setShowResetConfirmation(false)}
-                        >
-                        Cancel
-                    </button>
-                        <button 
-                                    className="btn btn-error flex-1 max-w-[40%]"
-                                    onClick={confirmReset}
-                        >
-                                    Reset All Settings
-                        </button>
-                    </div>
-                </div>
-                    </div>,
-                    document.body
-                )
-            )}
         </>
     )
 }
