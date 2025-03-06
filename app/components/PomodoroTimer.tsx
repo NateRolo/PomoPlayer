@@ -374,7 +374,7 @@ export const PomodoroTimer: React.FC = () => {
                             <button
                                 className="btn btn-neutral w-full hover:btn-secondary transform transition-all duration-200 hover:scale-105 active:scale-95"
                                 onClick={resetTimer}>
-                                Reset
+                                Reset Timer
                             </button>
 
                             <button
