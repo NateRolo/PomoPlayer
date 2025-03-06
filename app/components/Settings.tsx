@@ -255,7 +255,7 @@ export const Settings: React.FC<SettingsProps> = ({
         if (workDurationError || shortBreakDurationError || longBreakDurationError || 
             pausePromptDelayError || workSessionError || youtubeUrlError) {
             // If there are any validation errors, show an alert and prevent saving
-            alert("Please fix all validation errors before saving.");
+            alert("Please fix all errors before saving.");
             return;
         }
         
@@ -614,7 +614,7 @@ export const Settings: React.FC<SettingsProps> = ({
                                                 type="text"
                                                 value={newYoutubeUrl}
                                                 onChange={(e) => handleYoutubeUrlChange(e.target.value)}
-                                                placeholder="https://www.youtube.com/watch?v=..."
+                                                
                                                 className={`input input-bordered w-full ${youtubeUrlError ? 'input-error' : ''}`}
                                             />
                                             {youtubeUrlError && (
