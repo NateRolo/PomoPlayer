@@ -308,8 +308,10 @@ export const PomodoroTimer: React.FC = () => {
                                             <img src={user.user_metadata.avatar_url} alt={user.user_metadata?.full_name || "User"} />
                                         </div>
                                     ) : (
-                                        <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-content">
-                                            {user.user_metadata?.full_name?.charAt(0) || user.email?.charAt(0) || "U"}
+                                        <div className="w-10 h-10 rounded-full bg-primary grid place-items-center text-primary-content font-medium text-lg">
+                                            <span className="inline-block transform translate-y-0">
+                                                {user.user_metadata?.full_name?.charAt(0) || user.email?.charAt(0) || "U"}
+                                            </span>
                                         </div>
                                     )}
                                 </label>
@@ -380,7 +382,7 @@ export const PomodoroTimer: React.FC = () => {
                             <button
                                 className="btn btn-neutral w-full hover:btn-warning transform transition-all duration-200 hover:scale-105 active:scale-95"
                                 onClick={skipSession}>
-                                Skip
+                                Skip Session
                             </button>
 
                             <button
