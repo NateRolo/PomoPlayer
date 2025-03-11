@@ -244,7 +244,7 @@ export const PomodoroTimer: React.FC = () => {
 
     const playSound = () => {
         if (soundsEnabled) {
-            const audio = new Audio("/sounds/notification.mp3")
+            const audio = new Audio("/sounds/notification2.mp3")
             void audio.play()
         }
     }
