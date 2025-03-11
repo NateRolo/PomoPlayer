@@ -403,35 +403,37 @@ export const Settings: React.FC<SettingsProps> = ({
                                             onChange={(e) => setSelectedTheme(e.target.value as ThemeName)}
                                             className="select select-bordered w-full"
                                         >
-                                            <optgroup label="Themes">
+                                            <optgroup label="Default Themes">
                                                 <option value="dark">Dark</option>
                                                 <option value="light">Light</option>
-                                                <option value="cupcake">Cupcake</option>
-                                                <option value="forest">Forest</option>
-                                                <option value="bumblebee">Bumblebee</option>
-                                                <option value="emerald">Emerald</option>
-                                                <option value="corporate">Corporate</option>
-                                                <option value="synthwave">Synthwave</option>
-                                                <option value="retro">Retro</option>
-                                                <option value="cyberpunk">Cyberpunk</option>
-                                                <option value="valentine">Valentine</option>
-                                                <option value="halloween">Halloween</option>
-                                                <option value="garden">Garden</option>
-                                                <option value="aqua">Aqua</option>
-                                                <option value="lofi">Lofi</option>
-                                                <option value="pastel">Pastel</option>
-                                                <option value="fantasy">Fantasy</option>
-                                                <option value="wireframe">Wireframe</option>
-                                                <option value="black">Black</option>
-                                                <option value="luxury">Luxury</option>
-                                                <option value="dracula">Dracula</option>
-                                                <option value="cmyk">CMYK</option>
-                                                <option value="autumn">Autumn</option>
-                                                <option value="business">Business</option>
+                                            </optgroup>
+                                            <optgroup label="Other Themes">
                                                 <option value="acid">Acid</option>
-                                                <option value="lemonade">Lemonade</option>
-                                                <option value="night">Night</option>
+                                                <option value="aqua">Aqua</option>
+                                                <option value="autumn">Autumn</option>
+                                                <option value="black">Black</option>
+                                                <option value="bumblebee">Bumblebee</option>
+                                                <option value="business">Business</option>
+                                                <option value="cmyk">CMYK</option>
                                                 <option value="coffee">Coffee</option>
+                                                <option value="corporate">Corporate</option>
+                                                <option value="cupcake">Cupcake</option>
+                                                <option value="cyberpunk">Cyberpunk</option>
+                                                <option value="dracula">Dracula</option>
+                                                <option value="emerald">Emerald</option>
+                                                <option value="fantasy">Fantasy</option>
+                                                <option value="forest">Forest</option>
+                                                <option value="garden">Garden</option>
+                                                <option value="halloween">Halloween</option>
+                                                <option value="lemonade">Lemonade</option>
+                                                <option value="lofi">Lofi</option>
+                                                <option value="luxury">Luxury</option>
+                                                <option value="night">Night</option>
+                                                <option value="pastel">Pastel</option>
+                                                <option value="retro">Retro</option>
+                                                <option value="synthwave">Synthwave</option>
+                                                <option value="valentine">Valentine</option>
+                                                <option value="wireframe">Wireframe</option>
                                                 <option value="winter">Winter</option>
                                             </optgroup>
                                         </select>
@@ -553,7 +555,19 @@ export const Settings: React.FC<SettingsProps> = ({
 
                                 <div className="card bg-base-200">
                                     <div className="card-body p-4">
-                                        <h2 className="card-title text-base">Pause Prompts</h2>
+                                        <h2 className="card-title text-base flex items-center">
+                                            Pause Prompts
+                                            <div className="dropdown dropdown-hover">
+                                                <div tabIndex={0} role="button" className="btn btn-circle btn-xs btn-ghost text-info">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="w-4 h-4 stroke-current"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                </div>
+                                                <div tabIndex={0} className="dropdown-content card compact shadow bg-base-100 rounded-box w-64 absolute left-0 top-6">
+                                                    <div className="card-body p-3">
+                                                        <p className="text-sm">Pause prompts are your friendly reminder to get back on track! If you pause your timer to take care of something quick, we'll give you a gentle nudge after the time you set to help you remember to resume your session.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </h2>
 
                                         <div className="form-control">
                                             <label className="label cursor-pointer justify-between">
@@ -646,11 +660,15 @@ export const Settings: React.FC<SettingsProps> = ({
                         )}
 
                         {activeTab === 'account' && (
+                            
                             <div className="space-y-6">
-                                <h3 className="text-xl font-semibold">
+                                <h1 className="text-xl font-bold items-center">
+                                    Coming soon!
+                                </h1>
+                                {/* <h3 className="text-xl font-semibold">
                                     Account Settings
                                 </h3>
-
+                                
                                 {user ? (
                                     <div className="space-y-6">
                                         <div className="card bg-base-200">
@@ -688,7 +706,8 @@ export const Settings: React.FC<SettingsProps> = ({
                                             <p>Sign in to access account features</p>
                                         </div>
                                     </div>
-                                )}
+                                )} */}
+                                
                             </div>
                         )}
                     </div>
