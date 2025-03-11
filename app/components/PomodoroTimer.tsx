@@ -30,22 +30,23 @@ export const PomodoroTimer: React.FC = () => {
     const { user, signOut, isPremium, setPremiumStatus } = useAuth()
     const { settings, saveSettings, loading: settingsLoading } = useUserSettings()
     const [sessionType, setSessionType] = useState<SessionType>("work")
-    const [timeLeft, setTimeLeft] = useState(settings.durations.work)
+    const [timeLeft, setTimeLeft] = useState(DEFAULT_DURATIONS.work)
     const [isActive, setIsActive] = useState(false)
     const [sessionCount, setSessionCount] = useState(0)
     const [showSettings, setShowSettings] = useState(false)
     const [showPausePrompt, setShowPausePrompt] = useState(false)
-    const [youtubeUrl, setYoutubeUrl] = useState(settings.youtubeUrl)
+    const [youtubeUrl, setYoutubeUrl] = useState(DEFAULT_YOUTUBE_URL)
     const [player, setPlayer] = useState<YouTubePlayer | null>(null)
-    const [durations, setDurations] = useState(settings.durations)
-    const [sessionsUntilLongBreak, setSessionsUntilLongBreak] = useState(settings.sessionsUntilLongBreak)
-    const [pausePromptEnabled, setPausePromptEnabled] = useState(settings.pausePromptEnabled)
-    const [pausePromptDelay, setPausePromptDelay] = useState(settings.pausePromptDelay)
+    const [durations, setDurations] = useState(DEFAULT_DURATIONS)
+    const [sessionsUntilLongBreak, setSessionsUntilLongBreak] = useState(4)
+    const [pausePromptEnabled, setPausePromptEnabled] = useState(true)
+    const [pausePromptDelay, setPausePromptDelay] = useState(2)
     const [currentTheme, setCurrentTheme] = useState('dark')
-    const [soundsEnabled, setSoundsEnabled] = useState(settings.soundsEnabled)
-    const [youtubePlayerVisible, setYoutubePlayerVisible] = useState(settings.youtubePlayerVisible)
+    const [soundsEnabled, setSoundsEnabled] = useState(true)
+    const [youtubePlayerVisible, setYoutubePlayerVisible] = useState(true)
     const [showAuthModal, setShowAuthModal] = useState(false)
     const [showVideoLibrary, setShowVideoLibrary] = useState(false)
+    const [hasStarted, setHasStarted] = useState(false)
 
     const handleSessionComplete = useCallback(() => {
         let nextSessionType: SessionType;
@@ -92,6 +93,11 @@ export const PomodoroTimer: React.FC = () => {
             setYoutubeUrl(storedYoutubeUrl)
         }
 
+        const storedSessionsUntilLongBreak = localStorage.getItem("sessionsUntilLongBreak")
+        if (storedSessionsUntilLongBreak) {
+            setSessionsUntilLongBreak(parseInt(storedSessionsUntilLongBreak))
+        }
+
         const storedPausePromptEnabled = localStorage.getItem("pausePromptEnabled")
         const storedPausePromptDelay = localStorage.getItem("pausePromptDelay")
         const storedSoundsEnabled = localStorage.getItem("soundsEnabled")
@@ -132,7 +138,7 @@ export const PomodoroTimer: React.FC = () => {
 
     useEffect(() => {
         let pauseTimeout: NodeJS.Timeout | null = null
-        if (pausePromptEnabled && !isActive && timeLeft < durations[sessionType]) {
+        if (pausePromptEnabled && !isActive && hasStarted && timeLeft < durations[sessionType]) {
             pauseTimeout = setTimeout(
                 () => {
                     setShowPausePrompt(true)
@@ -144,9 +150,12 @@ export const PomodoroTimer: React.FC = () => {
         return () => {
             if (pauseTimeout) clearTimeout(pauseTimeout)
         }
-    }, [isActive, timeLeft, durations, sessionType, pausePromptEnabled, pausePromptDelay])
+    }, [isActive, timeLeft, durations, sessionType, pausePromptEnabled, pausePromptDelay, hasStarted])
 
     const toggleTimer = () => {
+        if (!isActive && !hasStarted) {
+            setHasStarted(true)
+        }
         setIsActive(!isActive)
         if (player && isActive) {
             player.pauseVideo();
@@ -157,11 +166,13 @@ export const PomodoroTimer: React.FC = () => {
 
     const resetTimer = () => {
         setIsActive(false)
+        setHasStarted(false)
         setTimeLeft(durations[sessionType])
         if (player) player.pauseVideo()
     }
 
     const skipSession = () => {
+        setHasStarted(false)
         handleSessionComplete()
     }
 
@@ -199,9 +210,6 @@ export const PomodoroTimer: React.FC = () => {
         newSoundsEnabled: boolean,
         newYoutubePlayerVisible: boolean
     ) => {
-        // Add debug log
-        console.log("Setting theme to:", newTheme);
-
         // Check if current session duration has changed
         const currentDurationChanged = durations[sessionType] !== newDurations[sessionType];
 
@@ -252,13 +260,13 @@ export const PomodoroTimer: React.FC = () => {
         setShowPausePrompt(false)
     }
 
-    // New function to handle session type change
     const changeSessionType = (newSessionType: SessionType) => {
         // Only change if it's a different session type
         if (newSessionType !== sessionType) {
             setSessionType(newSessionType)
             setTimeLeft(durations[newSessionType])
             setIsActive(false)
+            setHasStarted(false)
             if (player) player.pauseVideo()
         }
     }
@@ -271,16 +279,17 @@ export const PomodoroTimer: React.FC = () => {
         await signOut();
     };
     
-    const handlePurchasePremium = async () => {
-        console.log("Purchase premium clicked");
+    // 
+    // const handlePurchasePremium = async () => {
+    //     console.log("Purchase premium clicked");
         
-        setTimeout(async () => {
-            await setPremiumStatus(true);
+    //     setTimeout(async () => {
+    //         await setPremiumStatus(true);
             
-            // Show a success message
-            alert("Premium purchase successful! You now have access to all themes.");
-        }, 2000);
-    };
+    //         // Show a success message
+    //         alert("Premium purchase successful! You now have access to all themes.");
+    //     }, 2000);
+    // };
 
     const currentThemeColors = getSessionColors(currentTheme as ThemeName, sessionType);
 
@@ -300,6 +309,9 @@ export const PomodoroTimer: React.FC = () => {
                                 ? "Short Break"
                                 : "Long Break"}
                     </div>
+
+                            
+                    {/* Commented out for now as it's not needed for guest mode
 
                     <div className="absolute top-4 right-4">
                         {user ? (
@@ -330,7 +342,7 @@ export const PomodoroTimer: React.FC = () => {
                                 Sign In
                             </button>
                         )}
-                    </div>
+                    </div> */}
                     {/* Session type selector buttons */}
                     <div className="w-full flex flex-wrap justify-center gap-3 mb-10">
                         <div className="w-full max-w-md mx-auto grid grid-cols-3 gap-2">
@@ -437,14 +449,8 @@ export const PomodoroTimer: React.FC = () => {
                         currentTheme={currentTheme as ThemeName}
                         soundsEnabled={soundsEnabled}
                         youtubePlayerVisible={youtubePlayerVisible}
-                        isPremium={isPremium}
                         onSave={handleSettingsChange}
                         onClose={() => setShowSettings(false)}
-                        onPurchasePremium={handlePurchasePremium}
-                        onShowAuthModal={() => {
-                            setShowSettings(false);
-                            setShowAuthModal(true);
-                        }}
                     />
                 )}
                 {showPausePrompt && <PausePrompt onAction={handlePausePromptAction} currentTheme={currentTheme as ThemeName} />}
@@ -458,7 +464,6 @@ export const PomodoroTimer: React.FC = () => {
                         onSelectVideo={(url) => {
                             setYoutubeUrl(url);
                             setShowVideoLibrary(false);
-                            // Save to localStorage
                             localStorage.setItem('youtubeUrl', url);
                         }}
                         onClose={() => setShowVideoLibrary(false)}

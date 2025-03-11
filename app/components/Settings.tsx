@@ -16,7 +16,6 @@ interface SettingsProps {
     currentTheme: ThemeName
     soundsEnabled: boolean
     youtubePlayerVisible: boolean
-    isPremium: boolean
     onSave: (
         durations: typeof DEFAULT_DURATIONS,
         youtubeUrl: string,
@@ -28,8 +27,6 @@ interface SettingsProps {
         youtubePlayerVisible: boolean
     ) => void
     onClose: () => void
-    onPurchasePremium?: () => void;
-    onShowAuthModal?: () => void;
 }
 
 const DEFAULT_SETTINGS = {
@@ -56,11 +53,8 @@ export const Settings: React.FC<SettingsProps> = ({
     currentTheme,
     soundsEnabled,
     youtubePlayerVisible,
-    isPremium,
     onSave,
     onClose,
-    onPurchasePremium,
-    onShowAuthModal
 }) => {
     const [activeTab, setActiveTab] = useState('general')
     const [workDuration, setWorkDuration] = useState(Math.floor(durations.work / 60))
@@ -393,14 +387,11 @@ export const Settings: React.FC<SettingsProps> = ({
                                             onChange={(e) => setSelectedTheme(e.target.value as ThemeName)}
                                             className="select select-bordered w-full"
                                         >
-                                            <optgroup label="Basic Themes">
+                                            <optgroup label="Themes">
                                                 <option value="dark">Dark</option>
                                                 <option value="light">Light</option>
                                                 <option value="cupcake">Cupcake</option>
                                                 <option value="forest">Forest</option>
-                                            </optgroup>
-
-                                            <optgroup label="Premium Themes" disabled={!isPremium}>
                                                 <option value="bumblebee">Bumblebee</option>
                                                 <option value="emerald">Emerald</option>
                                                 <option value="corporate">Corporate</option>
@@ -425,17 +416,9 @@ export const Settings: React.FC<SettingsProps> = ({
                                                 <option value="lemonade">Lemonade</option>
                                                 <option value="night">Night</option>
                                                 <option value="coffee">Coffee</option>
-                                                <option value="winter">Winter</option>                                                
-                                                
+                                                <option value="winter">Winter</option>
                                             </optgroup>
                                         </select>
-
-                                        {!isPremium && (
-                                            <div className="flex items-center gap-2 text-info mt-2">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                                <span className="text-xs">Upgrade to access all premium themes</span>
-                                            </div>
-                                        )}
                                     </div>
                                 </div>
 
@@ -682,39 +665,11 @@ export const Settings: React.FC<SettingsProps> = ({
                                                 </div>
                                             </div>
                                         </div>
-
-                                        <div className="card bg-base-200">
-                                            <div className="card-body p-4">
-                                                <h2 className="card-title text-base">Premium Themes</h2>
-                                                {isPremium ? (
-                                                    <div className="alert alert-success">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                                        <span>You have access to all premium themes</span>
-                                                    </div>
-                                                ) : (
-                                                    <div className="space-y-3">
-                                                        <p>Unlock all 30 premium themes for a one-time payment of $2 CAD</p>
-                                                        <button
-                                                            className="btn btn-primary btn-sm"
-                                                            onClick={onPurchasePremium}
-                                                        >
-                                                            Upgrade Now
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
                                     </div>
                                 ) : (
                                     <div className="card bg-base-200">
                                         <div className="card-body p-4">
-                                            <p>Sign in to access account features and premium themes</p>
-                                            <button
-                                                className="btn btn-primary btn-sm mt-2"
-                                                onClick={onShowAuthModal}
-                                            >
-                                                Sign In
-                                            </button>
+                                            <p>Sign in to access account features</p>
                                         </div>
                                     </div>
                                 )}
