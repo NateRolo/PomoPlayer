@@ -6,6 +6,11 @@ import { DEFAULT_DURATIONS } from "./PomodoroTimer"
 import { ThemeName, getSessionColors } from '../types/theme'
 import { useAuth } from '../components/contexts/AuthContext'
 
+/**
+ * Settings component provides a modal interface for configuring timer durations,
+ * theme preferences, and other application settings. All settings are validated
+ * before being saved and persisted.
+ */
 interface SettingsProps {
     durations: typeof DEFAULT_DURATIONS
     youtubeUrl: string
@@ -28,6 +33,7 @@ interface SettingsProps {
     onClose: () => void
 }
 
+// Default settings used for the reset functionality
 const DEFAULT_SETTINGS = {
     durations: {
         work: 25 * 60,
@@ -198,8 +204,13 @@ export const Settings: React.FC<SettingsProps> = ({
         setYoutubeUrlError(null);
     }
 
+    /**
+     * Validates duration inputs with the following rules:
+     * - Must be a number
+     * - Must be at least 1 minute
+     * - Must be less than 3 hours
+     */
     const validateDuration = (value: number) => {
-        // Check if value is null or undefined
         if (value === null || value === undefined) {
             return {
                 isValid: false,
@@ -243,22 +254,28 @@ export const Settings: React.FC<SettingsProps> = ({
         { id: 'account', label: 'Account' },
     ]
 
+    /**
+     * Validates all settings before saving:
+     * - Checks all duration inputs (work, short break, long break)
+     * - Validates work sessions count (1-10)
+     * - Ensures YouTube URL is properly formatted if provided
+     * - Validates pause prompt delay
+     */
     const handleSave = () => {
-        // Check for any validation errors
+        // Early return if there are existing validation errors
         if (workDurationError || shortBreakDurationError || longBreakDurationError || 
             pausePromptDelayError || workSessionError || youtubeUrlError) {
-            // If there are any validation errors, show an alert and prevent saving
             alert("Please fix all errors before saving.");
             return;
         }
         
-        // Additional validation using validateDuration function
+        // Validate all duration inputs
         const workValidation = validateDuration(workDuration);
         const shortBreakValidation = validateDuration(shortBreakDuration);
         const longBreakValidation = validateDuration(longBreakDuration);
         const pausePromptValidation = validateDuration(newPausePromptDelay);
         
-        // Check if any validation failed
+        // Check each validation result
         if (!workValidation.isValid) {
             setWorkDurationError(workValidation.errorMessage);
             return;
@@ -279,13 +296,12 @@ export const Settings: React.FC<SettingsProps> = ({
             return;
         }
         
-        // Validate work sessions
         if (newSessionsUntilLongBreak < 1 || newSessionsUntilLongBreak > 10 || isNaN(newSessionsUntilLongBreak)) {
             setWorkSessionError("Work sessions must be between 1 and 10");
             return;
         }
         
-        // Validate YouTube URL if not empty
+        // YouTube URL validation with specific format requirements
         if (newYoutubeUrl) {
             const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/;
             if (!youtubeRegex.test(newYoutubeUrl)) {
@@ -300,7 +316,7 @@ export const Settings: React.FC<SettingsProps> = ({
             }
         }
         
-        // If all validations pass, save the settings
+        // All validations passed, save settings
         onSave(
             {
                 work: workDuration * 60,
@@ -314,15 +330,16 @@ export const Settings: React.FC<SettingsProps> = ({
             selectedTheme,
             newSoundsEnabled,
             newYoutubePlayerVisible
-        )
+        );
     }
 
+    /**
+     * Resets all settings to their default values after user confirmation
+     */
     const handleReset = () => {
-        // Use window.confirm instead of custom modal
         const confirmed = window.confirm("Are you sure you want to reset all settings to default values?");
         
         if (confirmed) {
-            // If confirmed, reset all settings
             setWorkDuration(Math.floor(DEFAULT_SETTINGS.durations.work / 60));
             setShortBreakDuration(Math.floor(DEFAULT_SETTINGS.durations.shortBreak / 60));
             setLongBreakDuration(Math.floor(DEFAULT_SETTINGS.durations.longBreak / 60));
@@ -330,7 +347,7 @@ export const Settings: React.FC<SettingsProps> = ({
             setNewYoutubeUrl(DEFAULT_SETTINGS.youtubeUrl);
             setNewPausePromptEnabled(DEFAULT_SETTINGS.pausePromptEnabled);
             setNewPausePromptDelay(DEFAULT_SETTINGS.pausePromptDelay);
-            setSelectedTheme('dark');
+            setSelectedTheme(DEFAULT_SETTINGS.theme);
             setNewSoundsEnabled(DEFAULT_SETTINGS.soundsEnabled);
             setNewYoutubePlayerVisible(DEFAULT_SETTINGS.youtubePlayerVisible);
 
@@ -343,7 +360,7 @@ export const Settings: React.FC<SettingsProps> = ({
                 DEFAULT_SETTINGS.theme,
                 DEFAULT_SETTINGS.soundsEnabled,
                 DEFAULT_SETTINGS.youtubePlayerVisible
-            )
+            );
         }
     }
 
