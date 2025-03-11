@@ -4,7 +4,6 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { DEFAULT_DURATIONS } from "./PomodoroTimer"
 import { ThemeName, getSessionColors } from '../types/theme'
-import { createPortal } from 'react-dom'
 import { useAuth } from '../components/contexts/AuthContext'
 
 interface SettingsProps {
@@ -56,7 +55,7 @@ export const Settings: React.FC<SettingsProps> = ({
     onSave,
     onClose,
 }) => {
-    const [activeTab, setActiveTab] = useState('general')
+    const [activeTab, setActiveTab] = useState('timers')
     const [workDuration, setWorkDuration] = useState(Math.floor(durations.work / 60))
     const [shortBreakDuration, setShortBreakDuration] = useState(Math.floor(durations.shortBreak / 60))
     const [longBreakDuration, setLongBreakDuration] = useState(Math.floor(durations.longBreak / 60))
@@ -238,8 +237,8 @@ export const Settings: React.FC<SettingsProps> = ({
     }
 
     const tabs = [
-        { id: 'general', label: 'General' },
         { id: 'timers', label: 'Timers' },
+        { id: 'display', label: 'Display' },
         { id: 'sound', label: 'Sound' },
         { id: 'account', label: 'Account' },
     ]
@@ -373,10 +372,10 @@ export const Settings: React.FC<SettingsProps> = ({
 
                     {/* Main content area */}
                     <div className="flex-1 overflow-y-auto p-4 md:p-6">
-                        {activeTab === 'general' && (
+                        {activeTab === 'display' && (
                             <div className="space-y-6">
                                 <h3 className="text-xl font-semibold">
-                                    General Settings
+                                    Display Settings
                                 </h3>
 
                                 <div className="card bg-base-200">
