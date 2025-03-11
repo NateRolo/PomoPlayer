@@ -20,11 +20,48 @@ export const DEFAULT_DURATIONS = {
     longBreak: 15 * 60,
 }
 
-// WHEN USER LOGS OUT THE PAGE SHOULD CHANGE TO DEFAULT THEME
-// when user sets work sessions above 6 it doesn't function as intended
-// include user setting that sets dark mode during runtime 
-
 const DEFAULT_YOUTUBE_URL = "https://www.youtube.com/watch?v=jfKfPfyJRdk"
+
+/**
+ * MiniPlayer component provides compact controls when the main YouTube player is hidden
+ */
+const MiniPlayer: React.FC<{
+    isPlaying: boolean;
+    onTogglePlay: () => void;
+    onShowPlayer: () => void;
+    videoTitle: string;
+}> = ({ isPlaying, onTogglePlay, onShowPlayer, videoTitle }) => {
+    return (
+        <div className="fixed bottom-4 right-4 flex items-center gap-2 bg-base-200 p-2 rounded-lg shadow-lg">
+            <button 
+                className={`btn btn-circle btn-sm ${isPlaying ? 'btn-primary' : 'btn-ghost'}`}
+                onClick={onTogglePlay}
+                title={isPlaying ? 'Pause' : 'Play'}
+            >
+                {isPlaying ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                )}
+            </button>
+            <span className="text-sm font-medium">{videoTitle}</span>
+            <button 
+                className="btn btn-circle btn-sm btn-ghost"
+                onClick={onShowPlayer}
+                title="Show video player"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+            </button>
+        </div>
+    );
+};
 
 /**
  * PomodoroTimer is the main component of the application, implementing the Pomodoro Technique
@@ -33,6 +70,8 @@ const DEFAULT_YOUTUBE_URL = "https://www.youtube.com/watch?v=jfKfPfyJRdk"
 export const PomodoroTimer: React.FC = () => {
     const { user, signOut, isPremium, setPremiumStatus } = useAuth()
     const { settings, saveSettings, loading: settingsLoading } = useUserSettings()
+    
+    // Initialize with default values
     const [sessionType, setSessionType] = useState<SessionType>("work")
     const [timeLeft, setTimeLeft] = useState(DEFAULT_DURATIONS.work)
     const [isActive, setIsActive] = useState(false)
@@ -51,6 +90,7 @@ export const PomodoroTimer: React.FC = () => {
     const [showAuthModal, setShowAuthModal] = useState(false)
     const [showVideoLibrary, setShowVideoLibrary] = useState(false)
     const [hasStarted, setHasStarted] = useState(false)
+    const [isPlaying, setIsPlaying] = useState(false)
 
     /**
      * Handles the completion of a timer session, managing the transition between
@@ -87,45 +127,57 @@ export const PomodoroTimer: React.FC = () => {
 
     // Load persisted settings from localStorage on component mount
     useEffect(() => {
-        
-        const storedDurations = localStorage.getItem("pomodoroDurations")
-        if (storedDurations) {
-            setDurations(JSON.parse(storedDurations))
+        const loadSettings = () => {
+            // Load durations and update timeLeft based on current session type
+            const storedDurations = localStorage.getItem("pomodoroDurations")
+            if (storedDurations) {
+                const parsedDurations = JSON.parse(storedDurations)
+                setDurations(parsedDurations)
+                // Update timeLeft based on current session type
+                setTimeLeft(parsedDurations[sessionType])
+            }
+
+            const storedYoutubeUrl = localStorage.getItem("youtubeUrl")
+            if (storedYoutubeUrl) {
+                setYoutubeUrl(storedYoutubeUrl)
+            }
+
+            const storedSessionsUntilLongBreak = localStorage.getItem("sessionsUntilLongBreak")
+            if (storedSessionsUntilLongBreak) {
+                setSessionsUntilLongBreak(parseInt(storedSessionsUntilLongBreak))
+            }
+
+            const storedPausePromptEnabled = localStorage.getItem("pausePromptEnabled")
+            const storedPausePromptDelay = localStorage.getItem("pausePromptDelay")
+            const storedSoundsEnabled = localStorage.getItem("soundsEnabled")
+            const storedYoutubePlayerVisible = localStorage.getItem("youtubePlayerVisible")
+
+            if (storedPausePromptEnabled !== null) {
+                setPausePromptEnabled(JSON.parse(storedPausePromptEnabled))
+            }
+            if (storedPausePromptDelay !== null) {
+                setPausePromptDelay(JSON.parse(storedPausePromptDelay))
+            }
+            if (storedSoundsEnabled !== null) {
+                setSoundsEnabled(JSON.parse(storedSoundsEnabled))
+            }
+            if (storedYoutubePlayerVisible !== null) {
+                setYoutubePlayerVisible(JSON.parse(storedYoutubePlayerVisible))
+            }
+
+            // Load and set theme
+            const storedTheme = localStorage.getItem("theme") as ThemeName || "dark"
+            setCurrentTheme(storedTheme)
+            document.documentElement.setAttribute("data-theme", storedTheme)
         }
 
-        const storedYoutubeUrl = localStorage.getItem("youtubeUrl")
-        if (storedYoutubeUrl) {
-            setYoutubeUrl(storedYoutubeUrl)
-        }
+        loadSettings()
+    }, [sessionType]) // Add sessionType as dependency to update timeLeft when session changes
 
-        const storedSessionsUntilLongBreak = localStorage.getItem("sessionsUntilLongBreak")
-        if (storedSessionsUntilLongBreak) {
-            setSessionsUntilLongBreak(parseInt(storedSessionsUntilLongBreak))
-        }
-
-        const storedPausePromptEnabled = localStorage.getItem("pausePromptEnabled")
-        const storedPausePromptDelay = localStorage.getItem("pausePromptDelay")
-        const storedSoundsEnabled = localStorage.getItem("soundsEnabled")
-        const storedYoutubePlayerVisible = localStorage.getItem("youtubePlayerVisible")
-
-        if (storedPausePromptEnabled !== null) {
-            setPausePromptEnabled(JSON.parse(storedPausePromptEnabled))
-        }
-        if (storedPausePromptDelay !== null) {
-            setPausePromptDelay(JSON.parse(storedPausePromptDelay))
-        }
-        if (storedSoundsEnabled !== null) {
-            setSoundsEnabled(JSON.parse(storedSoundsEnabled))
-        }
-        if (storedYoutubePlayerVisible !== null) {
-            setYoutubePlayerVisible(JSON.parse(storedYoutubePlayerVisible))
-        }
-
-        // Load and set theme
-        const storedTheme = localStorage.getItem("theme") as ThemeName || "dark";
-        setCurrentTheme(storedTheme);
-        document.documentElement.setAttribute("data-theme", storedTheme);
-    }, []); // Run once on mount
+    // Update timeLeft when durations change
+    useEffect(() => {
+        setTimeLeft(durations[sessionType])
+    }, [durations, sessionType])
 
     // Main timer countdown logic
     useEffect(() => {
@@ -206,6 +258,9 @@ export const PomodoroTimer: React.FC = () => {
 
     const onPlayerReady = (event: { target: YouTubePlayer }) => {
         setPlayer(event.target)
+        event.target.addEventListener('onStateChange', (event: any) => {
+            setIsPlaying(event.data === 1)
+        })
     }
 
     const formatTime = (seconds: number) => {
@@ -310,6 +365,17 @@ export const PomodoroTimer: React.FC = () => {
     // };
 
     const currentThemeColors = getSessionColors(currentTheme as ThemeName, sessionType);
+
+    // Handle play/pause from mini player
+    const handlePlayPause = () => {
+        if (player) {
+            if (isPlaying) {
+                player.pauseVideo();
+            } else {
+                player.playVideo();
+            }
+        }
+    };
 
     return (
         <>
@@ -427,33 +493,31 @@ export const PomodoroTimer: React.FC = () => {
                     </div>
 
                     <div className="w-full max-w-2xl rounded-t-xl overflow-hidden">
-                        {youtubePlayerVisible && (
-                            <div className="mt-4 relative">
-                                <div className="absolute top-2 right-2 z-10">
-                                    <button
-                                        className="btn btn-sm btn-ghost bg-base-100 bg-opacity-70"
-                                        onClick={() => setShowVideoLibrary(true)}
-                                        title="Video Library"
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                                        </svg>
-                                    </button>
-                                </div>
-                                <YouTube
-                                    videoId={youtubeUrl.split("v=")[1]}
-                                    opts={{
-                                        height: "100%",
-                                        width: "100%",
-                                        playerVars: {
-                                            autoplay: isActive ? 1 : 0,
-                                        },
-                                    }}
-                                    onReady={onPlayerReady}
-                                    className="w-full aspect-video"
-                                />
+                        <div className={youtubePlayerVisible ? "mt-4 relative" : "hidden"}>
+                            <div className="absolute top-2 right-2 z-10">
+                                <button
+                                    className="btn btn-sm btn-ghost bg-base-100 bg-opacity-70"
+                                    onClick={() => setShowVideoLibrary(true)}
+                                    title="Video Library"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                                    </svg>
+                                </button>
                             </div>
-                        )}
+                            <YouTube
+                                videoId={youtubeUrl.split("v=")[1]}
+                                opts={{
+                                    height: "100%",
+                                    width: "100%",
+                                    playerVars: {
+                                        autoplay: isActive ? 1 : 0,
+                                    },
+                                }}
+                                onReady={onPlayerReady}
+                                className="w-full aspect-video"
+                            />
+                        </div>
                     </div>
                 </div>
 
@@ -488,6 +552,16 @@ export const PomodoroTimer: React.FC = () => {
                     />
                 )}
             </div>
+
+            {/* Show mini player when main player is hidden */}
+            {!youtubePlayerVisible && (
+                <MiniPlayer 
+                    isPlaying={isPlaying}
+                    onTogglePlay={handlePlayPause}
+                    onShowPlayer={() => setYoutubePlayerVisible(true)}
+                    videoTitle={player?.getVideoData()?.title || 'YouTube'}
+                />
+            )}
         </>
     )
 }
