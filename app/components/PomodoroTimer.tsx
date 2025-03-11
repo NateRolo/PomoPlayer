@@ -26,6 +26,10 @@ export const DEFAULT_DURATIONS = {
 
 const DEFAULT_YOUTUBE_URL = "https://www.youtube.com/watch?v=jfKfPfyJRdk"
 
+/**
+ * PomodoroTimer is the main component of the application, implementing the Pomodoro Technique
+ * with customizable work/break intervals, YouTube integration, and theme support.
+ */
 export const PomodoroTimer: React.FC = () => {
     const { user, signOut, isPremium, setPremiumStatus } = useAuth()
     const { settings, saveSettings, loading: settingsLoading } = useUserSettings()
@@ -48,31 +52,31 @@ export const PomodoroTimer: React.FC = () => {
     const [showVideoLibrary, setShowVideoLibrary] = useState(false)
     const [hasStarted, setHasStarted] = useState(false)
 
+    /**
+     * Handles the completion of a timer session, managing the transition between
+     * work and break periods while tracking the session count.
+     * 
+     * HACK: player dependency is included in the callback to prevent stale closure,
+     * but it doesn't actually affect the session completion logic
+     */
     const handleSessionComplete = useCallback(() => {
         let nextSessionType: SessionType;
         let newSessionCount = sessionCount;
         
         if (sessionType === "work") {
-            // Increment work session count
             newSessionCount = sessionCount + 1;
             
-            // Check if we've completed the required number of work sessions for a long break
-            if (newSessionCount >= sessionsUntilLongBreak) {
-                nextSessionType = "longBreak";
-            } else {
-                nextSessionType = "shortBreak";
-            }
+            // Determine if we should transition to a long break or short break
+            nextSessionType = newSessionCount >= sessionsUntilLongBreak ? "longBreak" : "shortBreak";
         } else if (sessionType === "longBreak") {
-            // After a long break, reset the session count and start a new work session
+            // Reset cycle after long break
             newSessionCount = 0;
             nextSessionType = "work";
         } else {
-            // After a short break, start a new work session
-            // Don't increment the count here as it should only increment after work sessions
+            // After short break, return to work without incrementing count
             nextSessionType = "work";
         }
         
-        // Update state
         setSessionCount(newSessionCount);
         setSessionType(nextSessionType);
         setTimeLeft(durations[nextSessionType]);
@@ -81,8 +85,9 @@ export const PomodoroTimer: React.FC = () => {
         if(player) player.pauseVideo();
     }, [sessionCount, sessionType, durations, sessionsUntilLongBreak, isActive, player])
 
+    // Load persisted settings from localStorage on component mount
     useEffect(() => {
-        // Load all stored settings
+        
         const storedDurations = localStorage.getItem("pomodoroDurations")
         if (storedDurations) {
             setDurations(JSON.parse(storedDurations))
@@ -122,6 +127,7 @@ export const PomodoroTimer: React.FC = () => {
         document.documentElement.setAttribute("data-theme", storedTheme);
     }, []); // Run once on mount
 
+    // Main timer countdown logic
     useEffect(() => {
         let interval: NodeJS.Timeout | null = null
         if (isActive && timeLeft > 0) {
@@ -136,6 +142,12 @@ export const PomodoroTimer: React.FC = () => {
         }
     }, [isActive, timeLeft, handleSessionComplete])
 
+    /**
+     * Manages the pause prompt feature, showing a notification when:
+     * 1. The timer has been started and then paused
+     * 2. Pause prompts are enabled
+     * 3. The timer is not at its initial duration
+     */
     useEffect(() => {
         let pauseTimeout: NodeJS.Timeout | null = null
         if (pausePromptEnabled && !isActive && hasStarted && timeLeft < durations[sessionType]) {
@@ -152,15 +164,17 @@ export const PomodoroTimer: React.FC = () => {
         }
     }, [isActive, timeLeft, durations, sessionType, pausePromptEnabled, pausePromptDelay, hasStarted])
 
+    /**
+     * Toggles the timer state and synchronizes YouTube player playback
+     * Also tracks initial timer start for pause prompt functionality
+     */
     const toggleTimer = () => {
         if (!isActive && !hasStarted) {
             setHasStarted(true)
         }
         setIsActive(!isActive)
-        if (player && isActive) {
-            player.pauseVideo();
-        } else if (player && !isActive) {
-            player.playVideo();
+        if (player) {
+            isActive ? player.pauseVideo() : player.playVideo();
         }
     }
 
@@ -200,6 +214,10 @@ export const PomodoroTimer: React.FC = () => {
         return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
     }
 
+    /**
+     * Handles settings updates and persists them to localStorage
+     * If the current session duration changes, the timer is reset
+     */
     const handleSettingsChange = (
         newDurations: typeof DEFAULT_DURATIONS,
         newYoutubeUrl: string,
@@ -224,7 +242,7 @@ export const PomodoroTimer: React.FC = () => {
         setYoutubePlayerVisible(newYoutubePlayerVisible)
         document.documentElement.setAttribute("data-theme", newTheme)
 
-        // Save all settings to localStorage
+        // Persist settings to localStorage
         localStorage.setItem("pomodoroDurations", JSON.stringify(newDurations))
         localStorage.setItem("youtubeUrl", newYoutubeUrl)
         localStorage.setItem("sessionsUntilLongBreak", newSessionsUntilLongBreak.toString())
@@ -234,7 +252,7 @@ export const PomodoroTimer: React.FC = () => {
         localStorage.setItem("soundsEnabled", JSON.stringify(newSoundsEnabled))
         localStorage.setItem("youtubePlayerVisible", JSON.stringify(newYoutubePlayerVisible))
 
-        // Only reset timer if current session duration changed
+        // Reset timer if duration changed
         if (currentDurationChanged) {
             setTimeLeft(newDurations[sessionType])
         }
