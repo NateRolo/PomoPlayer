@@ -12,6 +12,7 @@ import { VideoLibrary } from "./VideoLibrary"
 import { useAuth } from '../components/contexts/AuthContext'
 import { useUserSettings } from '../hooks/useUserSettings'
 
+
 type SessionType = "work" | "shortBreak" | "longBreak"
 
 export const DEFAULT_DURATIONS = {
@@ -215,6 +216,14 @@ export const PomodoroTimer: React.FC = () => {
             if (pauseTimeout) clearTimeout(pauseTimeout)
         }
     }, [isActive, timeLeft, durations, sessionType, pausePromptEnabled, pausePromptDelay, hasStarted])
+
+
+    /**
+     * Sets the title of the page to the remaining time left.
+     */
+    useEffect(() => {
+        document.documentElement.setAttribute('title', formatTime(timeLeft));
+    }, [timeLeft])
 
     /**
      * Toggles the timer state and synchronizes YouTube player playback
