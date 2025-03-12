@@ -1,10 +1,10 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { DEFAULT_DURATIONS } from "./PomodoroTimer"
-import { ThemeName, getSessionColors } from '../types/theme'
-import { useAuth } from '../components/contexts/AuthContext'
+import { ThemeName } from '../types/theme'
+
 
 /**
  * Settings component provides a modal interface for configuring timer durations,
@@ -72,21 +72,12 @@ export const Settings: React.FC<SettingsProps> = ({
     const [selectedTheme, setSelectedTheme] = useState<ThemeName>(currentTheme as ThemeName)
     const [newSoundsEnabled, setNewSoundsEnabled] = useState(soundsEnabled)
     const [newYoutubePlayerVisible, setNewYoutubePlayerVisible] = useState(youtubePlayerVisible)
-    const [isBrowser, setIsBrowser] = useState(false)
     const [workDurationError, setWorkDurationError] = useState<string | null>(null)
     const [shortBreakDurationError, setShortBreakDurationError] = useState<string | null>(null)
     const [longBreakDurationError, setLongBreakDurationError] = useState<string | null>(null)
     const [pausePromptDelayError, setPausePromptDelayError] = useState<string | null>(null)
     const [workSessionError, setWorkSessionError] = useState<string | null>(null)
     const [youtubeUrlError, setYoutubeUrlError] = useState<string | null>(null)
-    const { user } = useAuth()
-
-    // Get current theme colors
-    const sessionColors = getSessionColors(selectedTheme, 'work')
-
-    useEffect(() => {
-        setIsBrowser(true)
-    }, [])
 
     const handleWorkDurationChange = (value: string) => {
         const numValue = parseInt(value, 10);
@@ -563,7 +554,7 @@ export const Settings: React.FC<SettingsProps> = ({
                                                 </div>
                                                 <div tabIndex={0} className="dropdown-content card compact shadow bg-base-100 rounded-box w-64 absolute left-0 top-6">
                                                     <div className="card-body p-3">
-                                                        <p className="text-sm">Pause prompts are your friendly reminder to get back on track! If you pause your timer to take care of something quick, we'll give you a gentle nudge after the time you set to help you remember to resume your session.</p>
+                                                        <p className="text-sm">Pause prompts are your friendly reminder to get back on track! If you pause your timer to take care of something quick, we&apos;ll give you a gentle nudge after the time you set to help you remember to resume your session.</p>
                                                     </div>
                                                 </div>
                                             </div>

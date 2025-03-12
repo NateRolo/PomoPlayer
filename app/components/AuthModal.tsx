@@ -3,9 +3,24 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabase";
 
+// Define proper types for the user object
+interface User {
+  id: string;
+  email?: string;
+  user_metadata?: {
+    full_name?: string;
+    avatar_url?: string;
+  };
+}
+
 interface AuthModalProps {
   onClose: () => void;
-  onLogin?: (user: any) => void;
+  onLogin?: (user: User) => void;
+}
+
+interface AuthError {
+  message: string;
+  status?: number;
 }
 
 export const AuthModal = ({ onClose, onLogin }: AuthModalProps) => {
@@ -22,16 +37,14 @@ export const AuthModal = ({ onClose, onLogin }: AuthModalProps) => {
     
     try {
       if (isLogin) {
-        // Sign in with email and password
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
         
         if (error) throw error;
-        if (onLogin && data.user) onLogin(data.user);
+        if (onLogin && data.user) onLogin(data.user as User);
       } else {
-        // Sign up with email and password
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -39,37 +52,19 @@ export const AuthModal = ({ onClose, onLogin }: AuthModalProps) => {
         
         if (error) throw error;
         if (data.user) {
-          // Show confirmation message for sign up
           alert("Check your email for the confirmation link!");
         }
       }
       
       onClose();
-    } catch (error: any) {
-      setError(error.message || "An error occurred during authentication");
+    } catch (error) {
+      const authError = error as AuthError;
+      setError(authError.message || "An error occurred during authentication");
     } finally {
       setLoading(false);
     }
   };
   
-  const handleGoogleSignIn = async () => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
-      
-      if (error) throw error;
-    } catch (error: any) {
-      setError(error.message || "An error occurred during Google sign-in");
-      setLoading(false);
-    }
-  };
   
   return (
     <div className="modal modal-open" onClick={(e) => {

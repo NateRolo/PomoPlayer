@@ -9,8 +9,6 @@ import type { YouTubePlayer } from 'react-youtube'
 import { getSessionColors, ThemeName } from '../types/theme'
 import { AuthModal } from "./AuthModal"
 import { VideoLibrary } from "./VideoLibrary"
-import { useAuth } from '../components/contexts/AuthContext'
-import { useUserSettings } from '../hooks/useUserSettings'
 
 
 type SessionType = "work" | "shortBreak" | "longBreak"
@@ -69,9 +67,6 @@ const MiniPlayer: React.FC<{
  * with customizable work/break intervals, YouTube integration, and theme support.
  */
 export const PomodoroTimer: React.FC = () => {
-    const { user, signOut, isPremium, setPremiumStatus } = useAuth()
-    const { settings, saveSettings, loading: settingsLoading } = useUserSettings()
-    
     // Initialize with default values
     const [sessionType, setSessionType] = useState<SessionType>("work")
     const [timeLeft, setTimeLeft] = useState(DEFAULT_DURATIONS.work)
@@ -124,6 +119,7 @@ export const PomodoroTimer: React.FC = () => {
         playSound();
         setIsActive(false);
         if(player) player.pauseVideo();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [sessionCount, sessionType, durations, sessionsUntilLongBreak, isActive, player])
 
     // Load persisted settings from localStorage on component mount
@@ -215,6 +211,7 @@ export const PomodoroTimer: React.FC = () => {
         return () => {
             if (pauseTimeout) clearTimeout(pauseTimeout)
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isActive, timeLeft, durations, sessionType, pausePromptEnabled, pausePromptDelay, hasStarted])
 
 
@@ -235,7 +232,11 @@ export const PomodoroTimer: React.FC = () => {
         }
         setIsActive(!isActive)
         if (player) {
-            isActive ? player.pauseVideo() : player.playVideo();
+            if (isActive) {
+                player.pauseVideo();
+            } else {
+                player.playVideo();
+            }
         }
     }
 
@@ -254,21 +255,21 @@ export const PomodoroTimer: React.FC = () => {
     const playSound = () => {
         if (soundsEnabled) {
             const audio = new Audio("/sounds/notification2.mp3")
-            void audio.play()
+            audio.play().catch(console.error)
         }
     }
 
     const playSound2 = () => {
         if (soundsEnabled) {
             const audio = new Audio("/sounds/pausePrompt.mp3")
-            void audio.play()
+            audio.play().catch(console.error)
         }
     }
 
     const onPlayerReady = (event: { target: YouTubePlayer }) => {
         setPlayer(event.target)
-        event.target.addEventListener('onStateChange', (event: any) => {
-            setIsPlaying(event.data === 1)
+        event.target.addEventListener('onStateChange', (stateEvent: { data: number }) => {
+            setIsPlaying(stateEvent.data === 1)
         })
     }
 
@@ -356,11 +357,7 @@ export const PomodoroTimer: React.FC = () => {
     const handleAuthModalClose = () => {
         setShowAuthModal(false);
     };
-    
-    const handleSignOut = async () => {
-        await signOut();
-    };
-    
+        
     // 
     // const handlePurchasePremium = async () => {
     //     console.log("Purchase premium clicked");
