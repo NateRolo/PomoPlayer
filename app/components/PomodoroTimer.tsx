@@ -6,7 +6,7 @@ import YouTube from "react-youtube"
 import { Settings } from "./Settings"
 import { PausePrompt } from "./PausePrompt"
 import type { YouTubePlayer } from 'react-youtube'
-import { getSessionColors, ThemeName } from '../types/theme'
+import { ThemeName } from '../types/theme'
 import { VideoLibrary } from "./VideoLibrary"
 
 
@@ -85,7 +85,6 @@ export const PomodoroTimer: React.FC = () => {
     const [showVideoLibrary, setShowVideoLibrary] = useState(false)
     const [hasStarted, setHasStarted] = useState(false)
     const [isPlaying, setIsPlaying] = useState(false)
-    const [alertMessage, setAlertMessage] = useState('')
     const [alarmAudio, setAlarmAudio] = useState<HTMLAudioElement | null>(null)
 
     /**
@@ -276,12 +275,12 @@ export const PomodoroTimer: React.FC = () => {
         handleSessionComplete()
     }
 
-    const playSound = () => {
-        if (soundsEnabled) {
-            const audio = new Audio("/sounds/notification2.mp3")
-            audio.play().catch(console.error)
-        }
-    }
+    // const playSound = () => {
+    //     if (soundsEnabled) {
+    //         const audio = new Audio("/sounds/notification2.mp3")
+    //         audio.play().catch(console.error)
+    //     }
+    // }
 
     const playSound2 = () => {
         if (soundsEnabled) {
