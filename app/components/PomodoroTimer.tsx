@@ -351,18 +351,6 @@ export const PomodoroTimer: React.FC = () => {
             if (player) player.pauseVideo()
         }
     }
-        
-    //
-    // const handlePurchasePremium = async () => {
-    //     console.log("Purchase premium clicked");
-        
-    //     setTimeout(async () => {
-    //         await setPremiumStatus(true);
-            
-    //         // Show a success message
-    //         alert("Premium purchase successful! You now have access to all themes.");
-    //     }, 2000);
-    // };
 
     const currentThemeColors = getSessionColors(currentTheme as ThemeName, sessionType);
 
@@ -379,14 +367,14 @@ export const PomodoroTimer: React.FC = () => {
 
     return (
         <>
-            <div className={`min-h-screen flex flex-col items-center justify-center p-4 pt-16 transition-all duration-700 
-                ${currentThemeColors.background}`}>
-                <div className="w-full max-w-4xl mx-auto flex flex-col items-center">
-                    <h1 className={`text-4xl font-bold mb-2 bg-clip-text bg-gradient-to-r 
-                        ${currentThemeColors.text}`}>
+            <div className="h-screen flex flex-col items-center justify-center p-4 transition-all duration-700 
+                ${currentThemeColors.background}">
+                <div className="w-full max-w-4xl mx-auto flex flex-col items-center gap-4">
+                    <h1 className="text-4xl font-bold bg-clip-text bg-gradient-to-r 
+                        ${currentThemeColors.text}">
                         PomoPlayer
                     </h1>
-                    <div className={`text-l font-medium mb-4 opacity-80 ${currentThemeColors.text}`}>
+                    <div className="text-l font-medium opacity-80 ${currentThemeColors.text}">
                         {sessionType === "work"
                             ? `Work Session ${sessionCount + 1}/${sessionsUntilLongBreak}`
                             : sessionType === "shortBreak"
@@ -394,83 +382,45 @@ export const PomodoroTimer: React.FC = () => {
                                 : "Long Break"}
                     </div>
 
-                            
-                    {/* Commented out for now as it's not needed for guest mode
-
-                    <div className="absolute top-4 right-4">
-                        {user ? (
-                            <div className="dropdown dropdown-end">
-                                <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
-                                    {user.user_metadata?.avatar_url ? (
-                                        <div className="w-10 rounded-full">
-                                            <img src={user.user_metadata.avatar_url} alt={user.user_metadata?.full_name || "User"} />
-                                        </div>
-                                    ) : (
-                                        <div className="w-10 h-10 rounded-full bg-primary grid place-items-center text-primary-content font-medium text-lg">
-                                            <span className="inline-block transform translate-y-0">
-                                                {user.user_metadata?.full_name?.charAt(0) || user.email?.charAt(0) || "U"}
-                                            </span>
-                                        </div>
-                                    )}
-                                </label>
-                                <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
-                                    <li><a onClick={() => setShowSettings(true)}>Settings</a></li>
-                                    <li><a onClick={signOut}>Sign Out</a></li>
-                                </ul>
-                            </div>
-                        ) : (
-                            <button
-                                className="btn btn-ghost btn-sm"
-                                onClick={() => setShowAuthModal(true)}
-                            >
-                                Sign In
-                            </button>
-                        )}
-                    </div> */}
-                    {/* Session type selector buttons */}
-                    <div className="w-full flex flex-wrap justify-center gap-3 mb-10">
-                        <div className="w-full max-w-md mx-auto grid grid-cols-3 gap-2">
-                            <button
-                                className={`btn w-full ${sessionType === "work" 
-                                    ? "btn-primary" 
-                                    : "btn-ghost hover:btn-primary"}`}
-                                onClick={() => changeSessionType("work")}>
-                                Work
-                            </button>
-                            <button
-                                className={`btn w-full ${sessionType === "shortBreak"
-                                    ? "btn-primary"
-                                    : "btn-ghost hover:btn-primary"}`} 
-                                onClick={() => changeSessionType("shortBreak")}>
-                                Break
-                            </button>
-                            <button
-                                className={`btn w-full ${sessionType === "longBreak"
-                                    ? "btn-primary"
-                                    : "btn-ghost hover:btn-primary"}`}
-                                onClick={() => changeSessionType("longBreak")}>
-                                Long Break
-                            </button>
-                        </div>
+                    <div className="w-full max-w-md mx-auto grid grid-cols-3 gap-2">
+                        <button
+                            className={`btn w-full ${sessionType === "work" 
+                                ? "btn-primary" 
+                                : "btn-ghost hover:btn-primary"}`}
+                            onClick={() => changeSessionType("work")}>
+                            Work
+                        </button>
+                        <button
+                            className={`btn w-full ${sessionType === "shortBreak"
+                                ? "btn-primary"
+                                : "btn-ghost hover:btn-primary"}`} 
+                            onClick={() => changeSessionType("shortBreak")}>
+                            Break
+                        </button>
+                        <button
+                            className={`btn w-full ${sessionType === "longBreak"
+                                ? "btn-primary"
+                                : "btn-ghost hover:btn-primary"}`}
+                            onClick={() => changeSessionType("longBreak")}>
+                            Long Break
+                        </button>
                     </div>
 
-                    <div className="relative mb-10">
-                        <div className={`text-8xl md:text-9xl font-bold tracking-tight 
-                            ${currentThemeColors.text}`}>
+                    <div className="relative my-4">
+                        <div className="text-8xl md:text-9xl font-bold tracking-tight 
+                            ${currentThemeColors.text}">
                             {formatTime(timeLeft)}
                         </div>
-                        <div className="absolute -bottom-9 left-1/2 transform -translate-x-1/2 flex space-x-2 text-sm opacity-60">
-                        </div>
                     </div>
 
-                    <div className="w-full flex flex-wrap justify-center gap-3 mb-10">
+                    <div className="w-full flex flex-col gap-2 max-w-md">
                         <button
-                            className="btn btn-accent w-full max-w-md mx-auto mb-2 py-4 transform transition-all duration-200 hover:scale-105 active:scale-95"
+                            className="btn btn-accent w-full transform transition-all duration-200 hover:scale-105 active:scale-95"
                             onClick={toggleTimer}>
                             {isActive ? "Pause" : "Start"}
                         </button>
 
-                        <div className="w-full max-w-md mx-auto grid grid-cols-3 gap-2">
+                        <div className="grid grid-cols-3 gap-2">
                             <button
                                 className="btn btn-neutral w-full hover:btn-secondary transform transition-all duration-200 hover:scale-105 active:scale-95"
                                 onClick={resetTimer}>
@@ -488,12 +438,11 @@ export const PomodoroTimer: React.FC = () => {
                                 onClick={() => setShowSettings(true)}>
                                 Settings
                             </button>
-                            
                         </div>
                     </div>
 
-                    <div className="w-full max-w-2xl rounded-t-xl overflow-hidden">
-                        <div className={youtubePlayerVisible ? "mt-4 relative" : "hidden"}>
+                    <div className="w-full max-w-2xl">
+                        <div className={youtubePlayerVisible ? "relative" : "hidden"}>
                             <div className="absolute top-2 right-2 z-10">
                                 <button
                                     className="btn btn-sm btn-ghost bg-base-100 bg-opacity-70"
@@ -549,7 +498,6 @@ export const PomodoroTimer: React.FC = () => {
                 )}
             </div>
 
-            {/* Show mini player when main player is hidden */}
             {!youtubePlayerVisible && (
                 <MiniPlayer 
                     isPlaying={isPlaying}
