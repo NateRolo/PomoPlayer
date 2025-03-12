@@ -367,82 +367,97 @@ export const PomodoroTimer: React.FC = () => {
 
     return (
         <>
-            <div className="h-screen flex flex-col items-center justify-center p-4 transition-all duration-700 
+            {/* Main container with no scroll */}
+            <div className="h-screen flex flex-col transition-all duration-700 
                 ${currentThemeColors.background}">
-                <div className="w-full max-w-4xl mx-auto flex flex-col items-center gap-4">
-                    <h1 className="text-4xl font-bold bg-clip-text bg-gradient-to-r 
-                        ${currentThemeColors.text}">
-                        PomoPlayer
-                    </h1>
-                    <div className="text-l font-medium opacity-80 ${currentThemeColors.text}">
-                        {sessionType === "work"
-                            ? `Work Session ${sessionCount + 1}/${sessionsUntilLongBreak}`
-                            : sessionType === "shortBreak"
-                                ? "Short Break"
-                                : "Long Break"}
-                    </div>
-
-                    <div className="w-full max-w-md mx-auto grid grid-cols-3 gap-2">
-                        <button
-                            className={`btn w-full ${sessionType === "work" 
-                                ? "btn-primary" 
-                                : "btn-ghost hover:btn-primary"}`}
-                            onClick={() => changeSessionType("work")}>
-                            Work
-                        </button>
-                        <button
-                            className={`btn w-full ${sessionType === "shortBreak"
-                                ? "btn-primary"
-                                : "btn-ghost hover:btn-primary"}`} 
-                            onClick={() => changeSessionType("shortBreak")}>
-                            Break
-                        </button>
-                        <button
-                            className={`btn w-full ${sessionType === "longBreak"
-                                ? "btn-primary"
-                                : "btn-ghost hover:btn-primary"}`}
-                            onClick={() => changeSessionType("longBreak")}>
-                            Long Break
-                        </button>
-                    </div>
-
-                    <div className="relative my-4">
-                        <div className="text-8xl md:text-9xl font-bold tracking-tight 
-                            ${currentThemeColors.text}">
-                            {formatTime(timeLeft)}
+                {/* Fixed height section for timer components - always visible */}
+                <div className="w-full flex-none py-4">
+                    <div className="max-w-4xl mx-auto flex flex-col items-center gap-4 min-w-[320px]">
+                        {/* Header */}
+                        <div className="flex flex-col items-center gap-2">
+                            <h1 className="text-4xl font-bold bg-clip-text bg-gradient-to-r 
+                                ${currentThemeColors.text} whitespace-nowrap">
+                                PomoPlayer
+                            </h1>
+                            <div className="text-l font-medium opacity-80 ${currentThemeColors.text} whitespace-nowrap">
+                                {sessionType === "work"
+                                    ? `Work Session ${sessionCount + 1}/${sessionsUntilLongBreak}`
+                                    : sessionType === "shortBreak"
+                                        ? "Short Break"
+                                        : "Long Break"}
+                            </div>
                         </div>
-                    </div>
 
-                    <div className="w-full flex flex-col gap-2 max-w-md">
-                        <button
-                            className="btn btn-accent w-full transform transition-all duration-200 hover:scale-105 active:scale-95"
-                            onClick={toggleTimer}>
-                            {isActive ? "Pause" : "Start"}
-                        </button>
-
-                        <div className="grid grid-cols-3 gap-2">
+                        {/* Session type selector */}
+                        <div className="w-full max-w-md mx-auto grid grid-cols-3 gap-2 min-w-[300px]">
                             <button
-                                className="btn btn-neutral w-full hover:btn-secondary transform transition-all duration-200 hover:scale-105 active:scale-95"
-                                onClick={resetTimer}>
-                                Reset Timer
+                                className={`btn w-full ${sessionType === "work" 
+                                    ? "btn-primary" 
+                                    : "btn-ghost hover:btn-primary"}`}
+                                onClick={() => changeSessionType("work")}>
+                                Work
                             </button>
-
                             <button
-                                className="btn btn-neutral w-full hover:btn-warning transform transition-all duration-200 hover:scale-105 active:scale-95"
-                                onClick={skipSession}>
-                                Skip Session
+                                className={`btn w-full ${sessionType === "shortBreak"
+                                    ? "btn-primary"
+                                    : "btn-ghost hover:btn-primary"}`} 
+                                onClick={() => changeSessionType("shortBreak")}>
+                                Break
                             </button>
-
                             <button
-                                className="btn btn-neutral w-full hover:btn-info transform transition-all duration-200 hover:scale-105 active:scale-95"
-                                onClick={() => setShowSettings(true)}>
-                                Settings
+                                className={`btn w-full ${sessionType === "longBreak"
+                                    ? "btn-primary"
+                                    : "btn-ghost hover:btn-primary"}`}
+                                onClick={() => changeSessionType("longBreak")}>
+                                Long Break
                             </button>
                         </div>
-                    </div>
 
-                    <div className="w-full max-w-2xl">
-                        <div className={youtubePlayerVisible ? "relative" : "hidden"}>
+                        {/* Timer display */}
+                        <div className="relative my-2">
+                            <div className="text-7xl sm:text-8xl md:text-9xl font-bold tracking-tight 
+                                ${currentThemeColors.text} whitespace-nowrap">
+                                {formatTime(timeLeft)}
+                            </div>
+                        </div>
+
+                        {/* Control buttons */}
+                        <div className="w-full flex flex-col gap-2 max-w-md min-w-[300px]">
+                            <button
+                                className="btn btn-accent w-full transform transition-all duration-200 hover:scale-105 active:scale-95"
+                                onClick={toggleTimer}>
+                                {isActive ? "Pause" : "Start"}
+                            </button>
+
+                            <div className="grid grid-cols-3 gap-2">
+                                <button
+                                    className="btn btn-neutral w-full hover:btn-secondary transform transition-all duration-200 hover:scale-105 active:scale-95"
+                                    onClick={resetTimer}>
+                                    Reset Timer
+                                </button>
+
+                                <button
+                                    className="btn btn-neutral w-full hover:btn-warning transform transition-all duration-200 hover:scale-105 active:scale-95"
+                                    onClick={skipSession}>
+                                    Skip Session
+                                </button>
+
+                                <button
+                                    className="btn btn-neutral w-full hover:btn-info transform transition-all duration-200 hover:scale-105 active:scale-95"
+                                    onClick={() => setShowSettings(true)}>
+                                    Settings
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Scrollable section for YouTube player */}
+                <div className="flex-1 overflow-y-auto">
+                    <div className="w-full max-w-2xl mx-auto p-4">
+                        <div className={`${youtubePlayerVisible 
+                            ? "relative w-full aspect-video" 
+                            : "hidden"}`}>
                             <div className="absolute top-2 right-2 z-10">
                                 <button
                                     className="btn btn-sm btn-ghost bg-base-100 bg-opacity-70"
@@ -464,39 +479,39 @@ export const PomodoroTimer: React.FC = () => {
                                     },
                                 }}
                                 onReady={onPlayerReady}
-                                className="w-full aspect-video"
+                                className="w-full h-full"
                             />
                         </div>
                     </div>
                 </div>
-
-                {showSettings && (
-                    <Settings
-                        durations={durations}
-                        youtubeUrl={youtubeUrl}
-                        sessionsUntilLongBreak={sessionsUntilLongBreak}
-                        pausePromptEnabled={pausePromptEnabled}
-                        pausePromptDelay={pausePromptDelay}
-                        currentTheme={currentTheme as ThemeName}
-                        soundsEnabled={soundsEnabled}
-                        youtubePlayerVisible={youtubePlayerVisible}
-                        onSave={handleSettingsChange}
-                        onClose={() => setShowSettings(false)}
-                    />
-                )}
-                {showPausePrompt && <PausePrompt onAction={handlePausePromptAction} currentTheme={currentTheme as ThemeName} />}
-                
-                {showVideoLibrary && (
-                    <VideoLibrary
-                        onSelectVideo={(url) => {
-                            setYoutubeUrl(url);
-                            setShowVideoLibrary(false);
-                            localStorage.setItem('youtubeUrl', url);
-                        }}
-                        onClose={() => setShowVideoLibrary(false)}
-                    />
-                )}
             </div>
+
+            {showSettings && (
+                <Settings
+                    durations={durations}
+                    youtubeUrl={youtubeUrl}
+                    sessionsUntilLongBreak={sessionsUntilLongBreak}
+                    pausePromptEnabled={pausePromptEnabled}
+                    pausePromptDelay={pausePromptDelay}
+                    currentTheme={currentTheme as ThemeName}
+                    soundsEnabled={soundsEnabled}
+                    youtubePlayerVisible={youtubePlayerVisible}
+                    onSave={handleSettingsChange}
+                    onClose={() => setShowSettings(false)}
+                />
+            )}
+            {showPausePrompt && <PausePrompt onAction={handlePausePromptAction} currentTheme={currentTheme as ThemeName} />}
+            
+            {showVideoLibrary && (
+                <VideoLibrary
+                    onSelectVideo={(url) => {
+                        setYoutubeUrl(url);
+                        setShowVideoLibrary(false);
+                        localStorage.setItem('youtubeUrl', url);
+                    }}
+                    onClose={() => setShowVideoLibrary(false)}
+                />
+            )}
 
             {!youtubePlayerVisible && (
                 <MiniPlayer 
