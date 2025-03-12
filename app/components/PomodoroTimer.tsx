@@ -7,7 +7,6 @@ import { Settings } from "./Settings"
 import { PausePrompt } from "./PausePrompt"
 import type { YouTubePlayer } from 'react-youtube'
 import { getSessionColors, ThemeName } from '../types/theme'
-import { AuthModal } from "./AuthModal"
 import { VideoLibrary } from "./VideoLibrary"
 
 
@@ -83,7 +82,6 @@ export const PomodoroTimer: React.FC = () => {
     const [currentTheme, setCurrentTheme] = useState('dark')
     const [soundsEnabled, setSoundsEnabled] = useState(true)
     const [youtubePlayerVisible, setYoutubePlayerVisible] = useState(true)
-    const [showAuthModal, setShowAuthModal] = useState(false)
     const [showVideoLibrary, setShowVideoLibrary] = useState(false)
     const [hasStarted, setHasStarted] = useState(false)
     const [isPlaying, setIsPlaying] = useState(false)
@@ -353,12 +351,8 @@ export const PomodoroTimer: React.FC = () => {
             if (player) player.pauseVideo()
         }
     }
-
-    const handleAuthModalClose = () => {
-        setShowAuthModal(false);
-    };
         
-    // 
+    //
     // const handlePurchasePremium = async () => {
     //     console.log("Purchase premium clicked");
         
@@ -542,11 +536,7 @@ export const PomodoroTimer: React.FC = () => {
                     />
                 )}
                 {showPausePrompt && <PausePrompt onAction={handlePausePromptAction} currentTheme={currentTheme as ThemeName} />}
-                {showAuthModal && (
-                    <AuthModal
-                        onClose={handleAuthModalClose}
-                    />
-                )}
+                
                 {showVideoLibrary && (
                     <VideoLibrary
                         onSelectVideo={(url) => {
