@@ -104,45 +104,58 @@ export const PomodoroTimer: React.FC = () => {
      * but it doesn't actually affect the session completion logic
      */
     const handleSessionComplete = useCallback(() => {
+        if(player) player.pauseVideo();
+        setIsActive(false);
+        
         let nextSessionType: SessionType;
         let newSessionCount = sessionCount;
         
         if (sessionType === "work") {
             newSessionCount = sessionCount + 1;
-            
-            // Determine if we should transition to a long break or short break
             nextSessionType = newSessionCount >= sessionsUntilLongBreak ? "longBreak" : "shortBreak";
+            
+            // Play sound and show alert
             if(alarmAudio) {
                 alarmAudio.play();
             }
-            alert("Good work, time for a break!")
+            alert("Time for a break!");
+            if(alarmAudio) {
+                alarmAudio.pause();
+                alarmAudio.currentTime = 0;
+            }
         } else if (sessionType === "longBreak") {
             // Reset cycle after long break
             newSessionCount = 0;
             nextSessionType = "work";
+            
             if (alarmAudio) {
                 alarmAudio.play();
             }
             alert("Let's focus!");
+            if(alarmAudio) {
+                alarmAudio.pause();
+                alarmAudio.currentTime = 0;
+            }
         } else {
             // After short break, return to work without incrementing count
             nextSessionType = "work";
+            
             if (alarmAudio) {
                 alarmAudio.play();
             }
-            alert("Let's focus!")
+            alert("Let's focus!");
+            if(alarmAudio) {
+                alarmAudio.pause();
+                alarmAudio.currentTime = 0;
+            }
         }
         
+        // Update session state after alert is dismissed
         setSessionCount(newSessionCount);
         setSessionType(nextSessionType);
         setTimeLeft(durations[nextSessionType]);
-        if(player) player.pauseVideo();
-        if(alarmAudio) {
-            alarmAudio.pause();
-            alarmAudio.currentTime= 0;
-        }
-        setIsActive(false);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [sessionCount, sessionType, durations, sessionsUntilLongBreak, isActive, player])
 
     // Load persisted settings from localStorage on component mount
@@ -254,12 +267,17 @@ export const PomodoroTimer: React.FC = () => {
             setHasStarted(true)
         }
         setIsActive(!isActive)
-        if (player) {
+        
+        // Only control video during work sessions
+        if (player && sessionType === "work") {
             if (isActive) {
                 player.pauseVideo();
             } else {
                 player.playVideo();
             }
+        } else if (player && !isActive) {
+            // Ensure video is paused during breaks
+            player.pauseVideo();
         }
     }
 
@@ -498,7 +516,8 @@ export const PomodoroTimer: React.FC = () => {
                                     height: "100%",
                                     width: "100%",
                                     playerVars: {
-                                        autoplay: isActive ? 1 : 0,
+                                        // Only autoplay if it's a work session and timer is active
+                                        autoplay: isActive && sessionType === "work" ? 1 : 0,
                                     },
                                 }}
                                 onReady={onPlayerReady}
