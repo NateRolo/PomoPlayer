@@ -85,6 +85,17 @@ export const PomodoroTimer: React.FC = () => {
     const [showVideoLibrary, setShowVideoLibrary] = useState(false)
     const [hasStarted, setHasStarted] = useState(false)
     const [isPlaying, setIsPlaying] = useState(false)
+    const [alertMessage, setAlertMessage] = useState('')
+    const [alarmAudio, setAlarmAudio] = useState<HTMLAudioElement | null>(null)
+
+    /**
+     * Initializes audio loop
+     */
+    useEffect(() => {
+        const audio = new Audio("/sounds/notification2.mp3");
+        audio.loop = true; // Make the alarm continuous
+        setAlarmAudio(audio);
+    }, []);
 
     /**
      * Handles the completion of a timer session, managing the transition between
@@ -102,21 +113,36 @@ export const PomodoroTimer: React.FC = () => {
             
             // Determine if we should transition to a long break or short break
             nextSessionType = newSessionCount >= sessionsUntilLongBreak ? "longBreak" : "shortBreak";
+            if(alarmAudio) {
+                alarmAudio.play();
+            }
+            alert("Good work, time for a break!")
         } else if (sessionType === "longBreak") {
             // Reset cycle after long break
             newSessionCount = 0;
             nextSessionType = "work";
+            if (alarmAudio) {
+                alarmAudio.play();
+            }
+            alert("Let's focus!");
         } else {
             // After short break, return to work without incrementing count
             nextSessionType = "work";
+            if (alarmAudio) {
+                alarmAudio.play();
+            }
+            alert("Let's focus!")
         }
         
         setSessionCount(newSessionCount);
         setSessionType(nextSessionType);
         setTimeLeft(durations[nextSessionType]);
-        playSound();
-        setIsActive(false);
         if(player) player.pauseVideo();
+        if(alarmAudio) {
+            alarmAudio.pause();
+            alarmAudio.currentTime= 0;
+        }
+        setIsActive(false);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [sessionCount, sessionType, durations, sessionsUntilLongBreak, isActive, player])
 
@@ -352,8 +378,6 @@ export const PomodoroTimer: React.FC = () => {
         }
     }
 
-    const currentThemeColors = getSessionColors(currentTheme as ThemeName, sessionType);
-
     // Handle play/pause from mini player
     const handlePlayPause = () => {
         if (player) {
@@ -521,6 +545,8 @@ export const PomodoroTimer: React.FC = () => {
                     videoTitle={player?.getVideoData()?.title || 'YouTube'}
                 />
             )}
+
+            
         </>
     )
 }
