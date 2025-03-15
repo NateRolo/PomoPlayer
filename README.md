@@ -43,7 +43,8 @@ Because I kept forgetting to:
 
 ## 📝 License
 
-MIT License - Feel free to clone this and procrastinate by modifying it instead of studying, just like I did!
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. 
+Feel free to use it, modify it, or procrastinate by improving it (just like I did)!
 
 ## 🤝 Contributing
 
