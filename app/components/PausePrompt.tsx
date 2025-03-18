@@ -21,7 +21,7 @@ export const PausePrompt: React.FC<PausePromptProps> = ({ onAction, currentTheme
                         className={`btn btn-secondary`}
                         onClick={() => onAction('reset')}
                     >
-                        Reset
+                        Reset Session
                     </button>
                     <button 
                         className={`btn btn-neutral`}
