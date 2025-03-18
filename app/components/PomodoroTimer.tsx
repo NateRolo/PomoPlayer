@@ -293,13 +293,6 @@ export const PomodoroTimer: React.FC = () => {
         handleSessionComplete()
     }
 
-    // const playSound = () => {
-    //     if (soundsEnabled) {
-    //         const audio = new Audio("/sounds/notification2.mp3")
-    //         audio.play().catch(console.error)
-    //     }
-    // }
-
     const playSound2 = () => {
         if (soundsEnabled) {
             const audio = new Audio("/sounds/pausePrompt.mp3")
