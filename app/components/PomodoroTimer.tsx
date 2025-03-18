@@ -314,11 +314,16 @@ export const PomodoroTimer: React.FC = () => {
         })
     }
 
-    const formatTime = (seconds: number) => {
-        const mins = Math.floor(seconds / 60)
-        const secs = seconds % 60
-        return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
-    }
+    const formatTime = (seconds: number): string => {
+        const hrs = Math.floor(seconds / 3600);
+        const mins = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+    
+        const formattedTime = `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+    
+        return hrs > 0 ? `${hrs}:${formattedTime}` : formattedTime;
+    };
+    
 
     /**
      * Handles settings updates and persists them to localStorage
