@@ -28,13 +28,18 @@ export const VideoLibrary: React.FC<VideoLibraryProps> = ({ onSelectVideo, onClo
       },
       { 
         id: "2", 
-        title: "Relaxing Jazz Music", 
-        url: "https://www.youtube.com/watch?v=neV3EPgvZ3g" 
+        title: "Deep & Melodic House", 
+        url: "https://www.youtube.com/watch?v=WsDyRAPFBC8" 
       },
       { 
         id: "3", 
-        title: "Classical Music for Studying", 
-        url: "https://www.youtube.com/watch?v=1Cv0kCB59J0" 
+        title: "Synthwave Radio", 
+        url: "https://www.youtube.com/watch?v=4xDzrJKXOOY" 
+      },
+      {
+        id: "4",
+        title: "Chillhop Radio",
+        url: "https://www.youtube.com/watch?v=5yx6BWlEVcY"
       }
     ];
   });
