@@ -40,6 +40,11 @@ export const VideoLibrary: React.FC<VideoLibraryProps> = ({ onSelectVideo, onClo
         id: "4",
         title: "Chillhop Radio",
         url: "https://www.youtube.com/watch?v=5yx6BWlEVcY"
+      },
+      {
+        id: "5",
+        title: "Yes",
+        url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
       }
     ];
   });
