@@ -62,6 +62,11 @@ export const VideoLibrary: React.FC<VideoLibraryProps> = ({ onSelectVideo, onClo
   const [editTitle, setEditTitle] = useState("");
   const [editUrl, setEditUrl] = useState("");
   
+  const getVideoId = (url: string): string => {
+    const match = url.match(/(?:youtu\.be\/|youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/);
+    return match ? match[1] : '';
+  };
+  
   const validateYoutubeUrl = (url: string): boolean => {
     if (!url) {
       setYoutubeUrlError("URL is required");
@@ -192,6 +197,7 @@ export const VideoLibrary: React.FC<VideoLibraryProps> = ({ onSelectVideo, onClo
           <table className="table w-full">
             <thead>
               <tr>
+                <th></th>
                 <th>Title</th>
                 <th>URL</th>
                 <th>Actions</th>
@@ -202,6 +208,13 @@ export const VideoLibrary: React.FC<VideoLibraryProps> = ({ onSelectVideo, onClo
                 <tr key={video.id}>
                   {editingVideo?.id === video.id ? (
                     <>
+                      <td>
+                        <img 
+                          src={`https://img.youtube.com/vi/${getVideoId(editUrl || video.url)}/default.jpg`}
+                          alt="Video thumbnail"
+                          className="w-20 h-auto rounded"
+                        />
+                      </td>
                       <td>
                         <input
                           type="text"
@@ -246,8 +259,19 @@ export const VideoLibrary: React.FC<VideoLibraryProps> = ({ onSelectVideo, onClo
                     </>
                   ) : (
                     <>
+                      <td>
+                        <img 
+                          src={`https://img.youtube.com/vi/${getVideoId(video.url)}/default.jpg`}
+                          alt={video.title}
+                          className="w-20 h-auto rounded"
+                        />
+                      </td>
                       <td>{video.title}</td>
-                      <td className="truncate max-w-[200px]">{video.url}</td>
+                      <td>
+                        <span className="text-sm opacity-50" title={video.url}>
+                          ID: {getVideoId(video.url)}
+                        </span>
+                      </td>
                       <td className="flex gap-2">
                         <button 
                           className="btn btn-sm btn-ghost"
