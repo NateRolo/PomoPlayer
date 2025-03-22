@@ -173,10 +173,10 @@ export const VideoLibrary: React.FC<VideoLibraryProps> = ({ onSelectVideo, onClo
     <div className="modal modal-open" onClick={(e) => {
       if (e.target === e.currentTarget) onClose();
     }}>
-      <div className="modal-box w-full max-w-2xl">
+      <div className="modal-box w-full max-w-2xl max-h-[80vh] flex flex-col">
         <h3 className="text-xl font-bold mb-4">Your YouTube Videos</h3>
         
-        <div className="mb-6">
+        <div className="sticky top-0 bg-base-100 z-10 mb-6 pb-4 border-b border-base-300">
           <div className="flex flex-col md:flex-row gap-2 mb-2">
             <input
               type="text"
@@ -205,142 +205,259 @@ export const VideoLibrary: React.FC<VideoLibraryProps> = ({ onSelectVideo, onClo
               {youtubeUrlError}
             </p>
           )}
-          
         </div>
         
-        <div className="overflow-x-auto">
-          <table className="table w-full">
-            <thead>
-              <tr>
-                <th></th>
-                <th>Title</th>
-                <th>URL</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {videos.map(video => (
-                <tr key={video.id}>
-                  {editingVideo?.id === video.id ? (
-                    <>
-                      <td>
-                        <img 
-                          src={`https://img.youtube.com/vi/${getVideoId(editUrl || video.url)}/default.jpg`}
-                          alt="Video thumbnail"
-                          className="w-20 h-auto rounded"
-                        />
-                      </td>
-                      <td>
-                        <input
-                          type="text"
-                          value={editTitle}
-                          onChange={(e) => setEditTitle(e.target.value)}
-                          placeholder={video.title}
-                          className="input input-bordered input-sm w-full"
-                        />
-                      </td>
-                      <td>
-                        <input
-                          type="text"
-                          value={editUrl}
-                          onChange={(e) => {
-                            setEditUrl(e.target.value);
-                            validateYoutubeUrl(e.target.value);
-                          }}
-                          placeholder={video.url}
-                          className={`input input-bordered input-sm w-full ${youtubeUrlError ? 'input-error' : ''}`}
-                        />
-                      </td>
-                      <td className="flex gap-2">
-                        <button 
-                          className="btn btn-sm btn-success"
-                          onClick={handleEditVideo}
-                          disabled={!!youtubeUrlError}
-                        >
-                          Save
-                        </button>
-                        <button 
-                          className="btn btn-sm btn-ghost"
-                          onClick={() => {
-                            setEditingVideo(null);
-                            setEditTitle("");
-                            setEditUrl("");
-                            setYoutubeUrlError(null);
-                          }}
-                        >
-                          Cancel
-                        </button>
-                      </td>
-                    </>
-                  ) : (
-                    <>
-                      <td>
-                        <img 
-                          src={`https://img.youtube.com/vi/${getVideoId(video.url)}/default.jpg`}
-                          alt={video.title}
-                          className="w-20 h-auto rounded"
-                        />
-                      </td>
-                      <td>{video.title}</td>
-                      <td>
-                        <span className="text-sm opacity-50" title={video.url}>
-                          ID: {getVideoId(video.url)}
-                        </span>
-                      </td>
-                      <td className="flex gap-2">
-                        <button 
-                          className="btn btn-sm btn-ghost"
-                          onClick={() => onSelectVideo(video.url)}
-                        >
-                          Use
-                        </button>
-                        <button 
-                          className="btn btn-sm btn-ghost"
-                          onClick={() => {
-                            setEditingVideo(video);
-                            setEditTitle(video.title);
-                            setEditUrl(video.url);
-                          }}
-                        >
-                          Edit
-                        </button>
-                        <button 
-                          className="btn btn-sm btn-ghost text-error"
-                          onClick={() => handleDeleteVideo(video.id)}
-                          title="Delete video"
-                        >
-                          <svg 
-                            xmlns="http://www.w3.org/2000/svg" 
-                            className="h-4 w-4" 
-                            fill="none" 
-                            viewBox="0 0 24 24" 
-                            stroke="currentColor"
-                          >
-                            <path 
-                              strokeLinecap="round" 
-                              strokeLinejoin="round" 
-                              strokeWidth={2} 
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" 
-                            />
-                          </svg>
-                        </button>
-                      </td>
-                    </>
-                  )}
-                </tr>
-              ))}
-              {videos.length === 0 && (
+        <div className="flex-1 overflow-y-auto min-h-0">
+          {/* Desktop view - table */}
+          <div className="hidden md:block">
+            <table className="table w-full">
+              <thead className="sticky top-0 bg-base-100 z-10">
                 <tr>
-                  <td colSpan={3} className="text-center py-4">
-                    No videos saved yet. Add your favorite YouTube videos above.
-                  </td>
+                  <th></th>
+                  <th>Title</th>
+                  <th>URL</th>
+                  <th>Actions</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {videos.map(video => (
+                  <tr key={video.id}>
+                    {editingVideo?.id === video.id ? (
+                      <>
+                        <td>
+                          <img 
+                            src={`https://img.youtube.com/vi/${getVideoId(editUrl || video.url)}/default.jpg`}
+                            alt="Video thumbnail"
+                            className="w-20 h-auto rounded"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="text"
+                            value={editTitle}
+                            onChange={(e) => setEditTitle(e.target.value)}
+                            placeholder={video.title}
+                            className="input input-bordered input-sm w-full"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="text"
+                            value={editUrl}
+                            onChange={(e) => {
+                              setEditUrl(e.target.value);
+                              validateYoutubeUrl(e.target.value);
+                            }}
+                            placeholder={video.url}
+                            className={`input input-bordered input-sm w-full ${youtubeUrlError ? 'input-error' : ''}`}
+                          />
+                        </td>
+                        <td className="flex gap-2">
+                          <button 
+                            className="btn btn-sm btn-success"
+                            onClick={handleEditVideo}
+                            disabled={!!youtubeUrlError}
+                          >
+                            Save
+                          </button>
+                          <button 
+                            className="btn btn-sm btn-ghost"
+                            onClick={() => {
+                              setEditingVideo(null);
+                              setEditTitle("");
+                              setEditUrl("");
+                              setYoutubeUrlError(null);
+                            }}
+                          >
+                            Cancel
+                          </button>
+                        </td>
+                      </>
+                    ) : (
+                      <>
+                        <td>
+                          <img 
+                            src={`https://img.youtube.com/vi/${getVideoId(video.url)}/default.jpg`}
+                            alt={video.title}
+                            className="w-20 h-auto rounded"
+                          />
+                        </td>
+                        <td>{video.title}</td>
+                        <td>
+                          <span className="text-sm opacity-50" title={video.url}>
+                            ID: {getVideoId(video.url)}
+                          </span>
+                        </td>
+                        <td className="flex gap-2">
+                          <button 
+                            className="btn btn-sm btn-ghost"
+                            onClick={() => onSelectVideo(video.url)}
+                          >
+                            Use
+                          </button>
+                          <button 
+                            className="btn btn-sm btn-ghost"
+                            onClick={() => {
+                              setEditingVideo(video);
+                              setEditTitle(video.title);
+                              setEditUrl(video.url);
+                            }}
+                          >
+                            Edit
+                          </button>
+                          <button 
+                            className="btn btn-sm btn-ghost text-error"
+                            onClick={() => handleDeleteVideo(video.id)}
+                            title="Delete video"
+                          >
+                            <svg 
+                              xmlns="http://www.w3.org/2000/svg" 
+                              className="h-4 w-4" 
+                              fill="none" 
+                              viewBox="0 0 24 24" 
+                              stroke="currentColor"
+                            >
+                              <path 
+                                strokeLinecap="round" 
+                                strokeLinejoin="round" 
+                                strokeWidth={2} 
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" 
+                              />
+                            </svg>
+                          </button>
+                        </td>
+                      </>
+                    )}
+                  </tr>
+                ))}
+                {videos.length === 0 && (
+                  <tr>
+                    <td colSpan={3} className="text-center py-4">
+                      No videos saved yet. Add your favorite YouTube videos above.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile view - cards */}
+          <div className="md:hidden space-y-4">
+            {videos.map(video => (
+              <div key={video.id} className="card bg-base-200">
+                {editingVideo?.id === video.id ? (
+                  // Edit mode
+                  <div className="p-4 space-y-4">
+                    <img 
+                      src={`https://img.youtube.com/vi/${getVideoId(editUrl || video.url)}/default.jpg`}
+                      alt="Video thumbnail"
+                      className="w-full h-auto rounded"
+                    />
+                    <input
+                      type="text"
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      placeholder={video.title}
+                      className="input input-bordered w-full"
+                    />
+                    <input
+                      type="text"
+                      value={editUrl}
+                      onChange={(e) => {
+                        setEditUrl(e.target.value);
+                        validateYoutubeUrl(e.target.value);
+                      }}
+                      placeholder={video.url}
+                      className={`input input-bordered w-full ${youtubeUrlError ? 'input-error' : ''}`}
+                    />
+                    <div className="flex justify-end gap-2">
+                      <button 
+                        className="btn btn-sm btn-success"
+                        onClick={handleEditVideo}
+                        disabled={!!youtubeUrlError}
+                      >
+                        Save
+                      </button>
+                      <button 
+                        className="btn btn-sm btn-ghost"
+                        onClick={() => {
+                          setEditingVideo(null);
+                          setEditTitle("");
+                          setEditUrl("");
+                          setYoutubeUrlError(null);
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  // View mode
+                  <div className="p-4">
+                    <div className="flex gap-4">
+                      <img 
+                        src={`https://img.youtube.com/vi/${getVideoId(video.url)}/default.jpg`}
+                        alt={video.title}
+                        className="w-24 h-auto rounded"
+                      />
+                      <div className="flex-1">
+                        <h3 className="font-bold">{video.title}</h3>
+                        <p className="text-sm opacity-50" title={video.url}>
+                          ID: {getVideoId(video.url)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-2 mt-4">
+                      <button 
+                        className="btn btn-sm btn-ghost"
+                        onClick={() => onSelectVideo(video.url)}
+                      >
+                        Use
+                      </button>
+                      <button 
+                        className="btn btn-sm btn-ghost"
+                        onClick={() => {
+                          setEditingVideo(video);
+                          setEditTitle(video.title);
+                          setEditUrl(video.url);
+                        }}
+                      >
+                        Edit
+                      </button>
+                      <button 
+                        className="btn btn-sm btn-ghost text-error"
+                        onClick={() => handleDeleteVideo(video.id)}
+                        title="Delete video"
+                      >
+                        <svg 
+                          xmlns="http://www.w3.org/2000/svg" 
+                          className="h-4 w-4" 
+                          fill="none" 
+                          viewBox="0 0 24 24" 
+                          stroke="currentColor"
+                        >
+                          <path 
+                            strokeLinecap="round" 
+                            strokeLinejoin="round" 
+                            strokeWidth={2} 
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" 
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+            {videos.length === 0 && (
+              <div className="text-center py-4">
+                No videos saved yet. Add your favorite YouTube videos above.
+              </div>
+            )}
+          </div>
         </div>
         
-        <div className="modal-action">
+        <div className="modal-action mt-4 border-t border-base-300 pt-4">
           <button className="btn" onClick={onClose}>Close</button>
         </div>
       </div>
