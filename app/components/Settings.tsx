@@ -28,7 +28,8 @@ interface SettingsProps {
         pausePromptDelay: number,
         theme: ThemeName,
         soundsEnabled: boolean,
-        youtubePlayerVisible: boolean
+        youtubePlayerVisible: boolean,
+        durationChanges: { work: boolean; shortBreak: boolean; longBreak: boolean }
     ) => void
     onClose: () => void
 }
@@ -307,20 +308,31 @@ export const Settings: React.FC<SettingsProps> = ({
             }
         }
         
-        // All validations passed, save settings
-        onSave(
-            {
+        // Convert minutes to seconds for comparison with current durations
+        const newDurations = {
                 work: workDuration * 60,
                 shortBreak: shortBreakDuration * 60,
                 longBreak: longBreakDuration * 60,
-            },
+        }
+
+        // Pass an additional parameter to indicate which durations actually changed
+        const durationChanges = {
+            work: newDurations.work !== durations.work,
+            shortBreak: newDurations.shortBreak !== durations.shortBreak,
+            longBreak: newDurations.longBreak !== durations.longBreak
+        }
+
+        // All validations passed, save settings
+        onSave(
+            newDurations,
             newYoutubeUrl,
             newSessionsUntilLongBreak,
             newPausePromptEnabled,
             newPausePromptDelay,
             selectedTheme,
             newSoundsEnabled,
-            newYoutubePlayerVisible
+            newYoutubePlayerVisible,
+            durationChanges
         );
     }
 
@@ -329,28 +341,29 @@ export const Settings: React.FC<SettingsProps> = ({
      */
     const handleReset = () => {
         const confirmed = window.confirm("Are you sure you want to reset all settings to default values?");
-        
-        if (confirmed) {
-            setWorkDuration(Math.floor(DEFAULT_SETTINGS.durations.work / 60));
-            setShortBreakDuration(Math.floor(DEFAULT_SETTINGS.durations.shortBreak / 60));
-            setLongBreakDuration(Math.floor(DEFAULT_SETTINGS.durations.longBreak / 60));
-            setNewSessionsUntilLongBreak(DEFAULT_SETTINGS.sessionsUntilLongBreak);
-            setNewYoutubeUrl(DEFAULT_SETTINGS.youtubeUrl);
-            setNewPausePromptEnabled(DEFAULT_SETTINGS.pausePromptEnabled);
-            setNewPausePromptDelay(DEFAULT_SETTINGS.pausePromptDelay);
-            setSelectedTheme(DEFAULT_SETTINGS.theme);
-            setNewSoundsEnabled(DEFAULT_SETTINGS.soundsEnabled);
-            setNewYoutubePlayerVisible(DEFAULT_SETTINGS.youtubePlayerVisible);
 
-            onSave(
-                DEFAULT_SETTINGS.durations,
-                DEFAULT_SETTINGS.youtubeUrl,
-                DEFAULT_SETTINGS.sessionsUntilLongBreak,
-                DEFAULT_SETTINGS.pausePromptEnabled,
-                DEFAULT_SETTINGS.pausePromptDelay,
-                DEFAULT_SETTINGS.theme,
-                DEFAULT_SETTINGS.soundsEnabled,
-                DEFAULT_SETTINGS.youtubePlayerVisible
+        if (confirmed) {
+        setWorkDuration(Math.floor(DEFAULT_SETTINGS.durations.work / 60));
+        setShortBreakDuration(Math.floor(DEFAULT_SETTINGS.durations.shortBreak / 60));
+        setLongBreakDuration(Math.floor(DEFAULT_SETTINGS.durations.longBreak / 60));
+        setNewSessionsUntilLongBreak(DEFAULT_SETTINGS.sessionsUntilLongBreak);
+        setNewYoutubeUrl(DEFAULT_SETTINGS.youtubeUrl);
+        setNewPausePromptEnabled(DEFAULT_SETTINGS.pausePromptEnabled);
+        setNewPausePromptDelay(DEFAULT_SETTINGS.pausePromptDelay);
+            setSelectedTheme(DEFAULT_SETTINGS.theme);
+        setNewSoundsEnabled(DEFAULT_SETTINGS.soundsEnabled);
+        setNewYoutubePlayerVisible(DEFAULT_SETTINGS.youtubePlayerVisible);
+
+        onSave(
+            DEFAULT_SETTINGS.durations,
+            DEFAULT_SETTINGS.youtubeUrl,
+            DEFAULT_SETTINGS.sessionsUntilLongBreak,
+            DEFAULT_SETTINGS.pausePromptEnabled,
+            DEFAULT_SETTINGS.pausePromptDelay,
+            DEFAULT_SETTINGS.theme,
+            DEFAULT_SETTINGS.soundsEnabled,
+                DEFAULT_SETTINGS.youtubePlayerVisible,
+                { work: true, shortBreak: true, longBreak: true }
             );
         }
     }
@@ -659,7 +672,7 @@ export const Settings: React.FC<SettingsProps> = ({
                                 {/* <h3 className="text-xl font-semibold">
                                     Account Settings
                                 </h3>
-                                
+
                                 {user ? (
                                     <div className="space-y-6">
                                         <div className="card bg-base-200">

@@ -208,11 +208,6 @@ export const PomodoroTimer: React.FC = () => {
         loadSettings()
     }, [sessionType]) // Add sessionType as dependency to update timeLeft when session changes
 
-    // Update timeLeft when durations change
-    useEffect(() => {
-        setTimeLeft(durations[sessionType])
-    }, [durations, sessionType])
-
     // Main timer countdown logic
     useEffect(() => {
         let interval: NodeJS.Timeout | null = null
@@ -335,10 +330,11 @@ export const PomodoroTimer: React.FC = () => {
         newPausePromptDelay: number,
         newTheme: ThemeName,
         newSoundsEnabled: boolean,
-        newYoutubePlayerVisible: boolean
+        newYoutubePlayerVisible: boolean,
+        durationChanges: { work: boolean, shortBreak: boolean, longBreak: boolean }
     ) => {
-        // Check if current session duration has changed
-        const currentDurationChanged = durations[sessionType] !== newDurations[sessionType];
+        // Check if current session duration changed
+        const currentDurationChanged = durationChanges[sessionType];
 
         // Update all settings
         setDurations(newDurations)
@@ -364,6 +360,8 @@ export const PomodoroTimer: React.FC = () => {
         // Reset timer if duration changed
         if (currentDurationChanged) {
             setTimeLeft(newDurations[sessionType])
+            setIsActive(false)
+            setHasStarted(false)
         }
 
         setShowSettings(false)
