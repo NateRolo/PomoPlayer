@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import YouTube from "react-youtube"
 import { Settings } from "./Settings"
 import { PausePrompt } from "./PausePrompt"
@@ -86,6 +86,7 @@ export const PomodoroTimer: React.FC = () => {
     const [hasStarted, setHasStarted] = useState(false)
     const [isPlaying, setIsPlaying] = useState(false)
     const [alarmAudio, setAlarmAudio] = useState<HTMLAudioElement | null>(null)
+    const soundIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
     /**
      * Initializes audio loop
@@ -235,19 +236,24 @@ export const PomodoroTimer: React.FC = () => {
      */
     useEffect(() => {
         let pauseTimeout: NodeJS.Timeout | null = null
+
         if (pausePromptEnabled && !isActive && hasStarted && timeLeft < durations[sessionType]) {
-            pauseTimeout = setTimeout(
-                () => {
-                    setShowPausePrompt(true)
-                    playSound2();
-                },
-                pausePromptDelay * 60 * 1000,
-            )
+            pauseTimeout = setTimeout(() => {
+                setShowPausePrompt(true)
+                playSound2()
+                
+                // Store interval reference in ref
+                soundIntervalRef.current = setInterval(() => {
+                    playSound2()
+                }, 5000)
+            }, pausePromptDelay * 60 * 1000)
         }
+
         return () => {
             if (pauseTimeout) clearTimeout(pauseTimeout)
+            if (soundIntervalRef.current) clearInterval(soundIntervalRef.current)
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isActive, timeLeft, durations, sessionType, pausePromptEnabled, pausePromptDelay, hasStarted])
 
 
@@ -365,6 +371,11 @@ export const PomodoroTimer: React.FC = () => {
     }
 
     const handlePausePromptAction = (action: string) => {
+        if (soundIntervalRef.current) {
+            clearInterval(soundIntervalRef.current)
+            soundIntervalRef.current = null
+        }
+
         switch (action) {
             case "resume":
                 toggleTimer()
