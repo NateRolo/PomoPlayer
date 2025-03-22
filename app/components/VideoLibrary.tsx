@@ -105,7 +105,19 @@ export const VideoLibrary: React.FC<VideoLibraryProps> = ({ onSelectVideo, onClo
     validateYoutubeUrl(value);
   };
   
-  const handleAddVideo = () => {
+  const getYoutubeVideoTitle = async (url: string): Promise<string> => {
+    const videoId = getVideoId(url);
+    try {
+      const response = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoId}`);
+      const data = await response.json();
+      return data.title || `Video ${videos.length + 1}`;
+    } catch (error) {
+      console.error('Error fetching video title:', error);
+      return `Video ${videos.length + 1}`;
+    }
+  };
+  
+  const handleAddVideo = async () => {
     if (!newVideoUrl) {
       setYoutubeUrlError("URL is required");
       return;
@@ -116,9 +128,12 @@ export const VideoLibrary: React.FC<VideoLibraryProps> = ({ onSelectVideo, onClo
       return;
     }
     
+    // If no title provided, fetch it from YouTube
+    const videoTitle = newVideoTitle || await getYoutubeVideoTitle(newVideoUrl);
+    
     const newVideo: Video = {
       id: Date.now().toString(),
-      title: newVideoTitle || `Video ${videos.length + 1}`,
+      title: videoTitle,
       url: newVideoUrl
     };
     
