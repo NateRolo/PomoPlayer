@@ -441,7 +441,7 @@ export const PomodoroTimer: React.FC = () => {
                             </h1>
                             <div className="text-l font-medium opacity-80 ${currentThemeColors.text} whitespace-nowrap">
                                 {sessionType === "work"
-                                    ? `Work Session ${sessionCount + 1}/${sessionsUntilLongBreak}`
+                                    ? `Focus Session ${sessionCount + 1}/${sessionsUntilLongBreak}`
                                     : sessionType === "shortBreak"
                                         ? "Short Break"
                                         : "Long Break"}
@@ -489,23 +489,29 @@ export const PomodoroTimer: React.FC = () => {
                                 {isActive ? "Pause" : "Start"}
                             </button>
 
-                            <div className="grid grid-cols-3 gap-2">
+                            <div className="grid grid-cols-2 gap-2">
                                 <button
-                                    className="btn btn-neutral w-full hover:btn-secondary transform transition-all duration-200 hover:scale-105 active:scale-95"
+                                    className="btn btn-neutral hover:btn-secondary transform transition-all duration-200 hover:scale-105 active:scale-95"
                                     onClick={resetTimer}>
                                     Reset Timer
                                 </button>
 
                                 <button
-                                    className="btn btn-neutral w-full hover:btn-warning transform transition-all duration-200 hover:scale-105 active:scale-95"
+                                    className="btn btn-neutral hover:btn-warning transform transition-all duration-200 hover:scale-105 active:scale-95"
                                     onClick={skipSession}>
                                     Skip Session
                                 </button>
 
                                 <button
-                                    className="btn btn-neutral w-full hover:btn-info transform transition-all duration-200 hover:scale-105 active:scale-95"
+                                    className="btn btn-neutral hover:btn-info transform transition-all duration-200 hover:scale-105 active:scale-95"
                                     onClick={() => setShowSettings(true)}>
                                     Settings
+                                </button>
+
+                                <button
+                                    className="btn btn-neutral hover:btn-success transform transition-all duration-200 hover:scale-105 active:scale-95"
+                                    onClick={() => setShowVideoLibrary(true)}>
+                                    Videos
                                 </button>
                             </div>
                         </div>
@@ -515,27 +521,18 @@ export const PomodoroTimer: React.FC = () => {
                 {/* Scrollable section for YouTube player */}
                 <div className="flex-1 overflow-y-auto">
                     <div className="w-full max-w-2xl mx-auto p-4">
+                        
+
+                        {/* YouTube Player */}
                         <div className={`${youtubePlayerVisible 
                             ? "relative w-full aspect-video" 
                             : "hidden"}`}>
-                            <div className="absolute top-2 right-2 z-10">
-                                <button
-                                    className="btn btn-sm btn-ghost bg-base-100 bg-opacity-70"
-                                    onClick={() => setShowVideoLibrary(true)}
-                                    title="Video Library"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                                    </svg>
-                                </button>
-                            </div>
                             <YouTube
                                 videoId={youtubeUrl.split("v=")[1]}
                                 opts={{
                                     height: "100%",
                                     width: "100%",
                                     playerVars: {
-                                        // Only autoplay if it's a work session and timer is active
                                         autoplay: isActive && sessionType === "work" ? 1 : 0,
                                     },
                                 }}
