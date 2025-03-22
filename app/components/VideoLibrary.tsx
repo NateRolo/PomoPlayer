@@ -58,6 +58,10 @@ export const VideoLibrary: React.FC<VideoLibraryProps> = ({ onSelectVideo, onClo
   const [newVideoTitle, setNewVideoTitle] = useState("");
   const [youtubeUrlError, setYoutubeUrlError] = useState<string | null>(null);
   
+  const [editingVideo, setEditingVideo] = useState<Video | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editUrl, setEditUrl] = useState("");
+  
   const validateYoutubeUrl = (url: string): boolean => {
     if (!url) {
       setYoutubeUrlError("URL is required");
@@ -123,6 +127,28 @@ export const VideoLibrary: React.FC<VideoLibraryProps> = ({ onSelectVideo, onClo
     setVideos(videos.filter(video => video.id !== id));
   };
   
+  const handleEditVideo = () => {
+    if (!editingVideo) return;
+    
+    // Validate the URL
+    if (!validateYoutubeUrl(editUrl)) {
+      return;
+    }
+    
+    // Update the video in the list
+    setVideos(videos.map(video => 
+      video.id === editingVideo.id 
+        ? { ...video, title: editTitle || video.title, url: editUrl }
+        : video
+    ));
+    
+    // Reset edit state
+    setEditingVideo(null);
+    setEditTitle("");
+    setEditUrl("");
+    setYoutubeUrlError(null);
+  };
+  
   return (
     <div className="modal modal-open" onClick={(e) => {
       if (e.target === e.currentTarget) onClose();
@@ -174,22 +200,94 @@ export const VideoLibrary: React.FC<VideoLibraryProps> = ({ onSelectVideo, onClo
             <tbody>
               {videos.map(video => (
                 <tr key={video.id}>
-                  <td>{video.title}</td>
-                  <td className="truncate max-w-[200px]">{video.url}</td>
-                  <td className="flex gap-2">
-                    <button 
-                      className="btn btn-sm btn-ghost"
-                      onClick={() => onSelectVideo(video.url)}
-                    >
-                      Use
-                    </button>
-                    <button 
-                      className="btn btn-sm btn-ghost text-error"
-                      onClick={() => handleDeleteVideo(video.id)}
-                    >
-                      Delete
-                    </button>
-                  </td>
+                  {editingVideo?.id === video.id ? (
+                    <>
+                      <td>
+                        <input
+                          type="text"
+                          value={editTitle}
+                          onChange={(e) => setEditTitle(e.target.value)}
+                          placeholder={video.title}
+                          className="input input-bordered input-sm w-full"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="text"
+                          value={editUrl}
+                          onChange={(e) => {
+                            setEditUrl(e.target.value);
+                            validateYoutubeUrl(e.target.value);
+                          }}
+                          placeholder={video.url}
+                          className={`input input-bordered input-sm w-full ${youtubeUrlError ? 'input-error' : ''}`}
+                        />
+                      </td>
+                      <td className="flex gap-2">
+                        <button 
+                          className="btn btn-sm btn-success"
+                          onClick={handleEditVideo}
+                          disabled={!!youtubeUrlError}
+                        >
+                          Save
+                        </button>
+                        <button 
+                          className="btn btn-sm btn-ghost"
+                          onClick={() => {
+                            setEditingVideo(null);
+                            setEditTitle("");
+                            setEditUrl("");
+                            setYoutubeUrlError(null);
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      </td>
+                    </>
+                  ) : (
+                    <>
+                      <td>{video.title}</td>
+                      <td className="truncate max-w-[200px]">{video.url}</td>
+                      <td className="flex gap-2">
+                        <button 
+                          className="btn btn-sm btn-ghost"
+                          onClick={() => onSelectVideo(video.url)}
+                        >
+                          Use
+                        </button>
+                        <button 
+                          className="btn btn-sm btn-ghost"
+                          onClick={() => {
+                            setEditingVideo(video);
+                            setEditTitle(video.title);
+                            setEditUrl(video.url);
+                          }}
+                        >
+                          Edit
+                        </button>
+                        <button 
+                          className="btn btn-sm btn-ghost text-error"
+                          onClick={() => handleDeleteVideo(video.id)}
+                          title="Delete video"
+                        >
+                          <svg 
+                            xmlns="http://www.w3.org/2000/svg" 
+                            className="h-4 w-4" 
+                            fill="none" 
+                            viewBox="0 0 24 24" 
+                            stroke="currentColor"
+                          >
+                            <path 
+                              strokeLinecap="round" 
+                              strokeLinejoin="round" 
+                              strokeWidth={2} 
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" 
+                            />
+                          </svg>
+                        </button>
+                      </td>
+                    </>
+                  )}
                 </tr>
               ))}
               {videos.length === 0 && (
