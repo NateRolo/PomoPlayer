@@ -434,7 +434,7 @@ export const PomodoroTimer: React.FC = () => {
                                     ? "btn-primary" 
                                     : "btn-ghost hover:btn-primary"}`}
                                 onClick={() => changeSessionType("work")}>
-                                Work
+                                Focus
                             </button>
                             <button
                                 className={`btn w-full ${sessionType === "shortBreak"
