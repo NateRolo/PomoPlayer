@@ -4,6 +4,7 @@ import type React from "react"
 import { useState } from "react"
 import { DEFAULT_DURATIONS } from "./PomodoroTimer"
 import { ThemeName } from '../types/theme'
+import { ThemePreview } from './ThemePreview'
 
 
 /**
@@ -79,6 +80,7 @@ export const Settings: React.FC<SettingsProps> = ({
     const [pausePromptDelayError, setPausePromptDelayError] = useState<string | null>(null)
     const [workSessionError, setWorkSessionError] = useState<string | null>(null)
     const [youtubeUrlError, setYoutubeUrlError] = useState<string | null>(null)
+    const [previewTheme, setPreviewTheme] = useState<ThemeName | null>(null)
 
     const handleWorkDurationChange = (value: string) => {
         const numValue = parseInt(value, 10);
@@ -402,16 +404,17 @@ export const Settings: React.FC<SettingsProps> = ({
                                 <div className="card bg-base-200">
                                     <div className="card-body p-4 gap-2">
                                         <h2 className="card-title text-base">Theme</h2>
+                                        <div className="flex gap-4">
                                         <select
+                                                className="select select-bordered flex-1"
                                             value={selectedTheme}
                                             onChange={(e) => setSelectedTheme(e.target.value as ThemeName)}
-                                            className="select select-bordered w-full"
+                                            onMouseEnter={(e) => setPreviewTheme((e.target as HTMLSelectElement).value as ThemeName)}
+                                            onMouseLeave={() => setPreviewTheme(null)}
                                         >
-                                            <optgroup label="Default Themes">
-                                                <option value="dark">Dark</option>
                                                 <option value="light">Light</option>
-                                            </optgroup>
-                                            <optgroup label="Other Themes">
+                                                <option value="dark">Dark</option>
+                                                <option value="cupcake">Cupcake</option>
                                                 <option value="acid">Acid</option>
                                                 <option value="aqua">Aqua</option>
                                                 <option value="autumn">Autumn</option>
@@ -421,7 +424,6 @@ export const Settings: React.FC<SettingsProps> = ({
                                                 <option value="cmyk">CMYK</option>
                                                 <option value="coffee">Coffee</option>
                                                 <option value="corporate">Corporate</option>
-                                                <option value="cupcake">Cupcake</option>
                                                 <option value="cyberpunk">Cyberpunk</option>
                                                 <option value="dracula">Dracula</option>
                                                 <option value="emerald">Emerald</option>
@@ -439,8 +441,13 @@ export const Settings: React.FC<SettingsProps> = ({
                                                 <option value="valentine">Valentine</option>
                                                 <option value="wireframe">Wireframe</option>
                                                 <option value="winter">Winter</option>
-                                            </optgroup>
                                         </select>
+
+                                            {/* Preview panel */}
+                                            <div className="border-l pl-4">
+                                                <ThemePreview theme={previewTheme || selectedTheme} />
+                                            </div>
+                                            </div>
                                     </div>
                                 </div>
 
