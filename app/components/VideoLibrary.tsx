@@ -154,15 +154,12 @@ export const VideoLibrary: React.FC<VideoLibraryProps> = ({ onSelectVideo, onClo
               Add
             </button>
           </div>
-          {youtubeUrlError ? (
+          {youtubeUrlError && (
             <p className="text-xs text-error mt-1">
               {youtubeUrlError}
             </p>
-          ) : (
-            <p className="text-xs opacity-70">
-              Enter a YouTube video URL (e.g., https://www.youtube.com/watch?v=jfKfPfyJRdk)
-            </p>
           )}
+          
         </div>
         
         <div className="overflow-x-auto">
