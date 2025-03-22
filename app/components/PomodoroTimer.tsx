@@ -323,7 +323,6 @@ export const PomodoroTimer: React.FC = () => {
         return hrs > 0 ? `${hrs}:${formattedTime}` : formattedTime;
     };
     
-
     /**
      * Handles settings updates and persists them to localStorage
      * If the current session duration changes, the timer is reset
@@ -371,26 +370,39 @@ export const PomodoroTimer: React.FC = () => {
     }
 
     const handlePausePromptAction = (action: string) => {
+        // Clear current sound interval
         if (soundIntervalRef.current) {
             clearInterval(soundIntervalRef.current)
             soundIntervalRef.current = null
         }
 
         switch (action) {
-            case "resume":
-                toggleTimer()
+            case "continue":
+                setIsActive(true) 
+                if (player) {
+                    player.playVideo() 
+                }
+                setShowPausePrompt(false)
                 break
-            case "end":
-                resetTimer()
+            
+            case "reset":
+                setIsActive(false)
+                setTimeLeft(durations[sessionType])
+                if (player) player.pauseVideo()
+                setHasStarted(false)
+                setShowPausePrompt(false)
                 break
-            case "extend":
-                setTimeLeft((prevTime) => prevTime + 5 * 60)
-                break
-            case "reprompt":
-                setTimeLeft((prevTime) => prevTime + 2 * 60)
+            
+            case "remind":
+                setTimeout(() => {
+                    playSound2()
+                    soundIntervalRef.current = setInterval(() => {
+                        playSound2()
+                    }, 5000)
+                }, 2 * 60 * 1000) 
+                setShowPausePrompt(false) 
                 break
         }
-        setShowPausePrompt(false)
     }
 
     const changeSessionType = (newSessionType: SessionType) => {
