@@ -21,6 +21,7 @@ interface SettingsProps {
     currentTheme: ThemeName
     soundsEnabled: boolean
     youtubePlayerVisible: boolean
+    keepRunningOnTransition: boolean
     onSave: (
         durations: typeof DEFAULT_DURATIONS,
         youtubeUrl: string,
@@ -30,6 +31,7 @@ interface SettingsProps {
         theme: ThemeName,
         soundsEnabled: boolean,
         youtubePlayerVisible: boolean,
+        keepRunningOnTransition: boolean,
         durationChanges: { work: boolean; shortBreak: boolean; longBreak: boolean }
     ) => void
     onClose: () => void
@@ -48,7 +50,8 @@ const DEFAULT_SETTINGS = {
     pausePromptDelay: 2,
     theme: "dark" as ThemeName,
     soundsEnabled: true,
-    youtubePlayerVisible: true
+    youtubePlayerVisible: true,
+    keepRunningOnTransition: false
 }
 
 export const Settings: React.FC<SettingsProps> = ({
@@ -60,6 +63,7 @@ export const Settings: React.FC<SettingsProps> = ({
     currentTheme,
     soundsEnabled,
     youtubePlayerVisible,
+    keepRunningOnTransition,
     onSave,
     onClose,
 }) => {
@@ -74,6 +78,7 @@ export const Settings: React.FC<SettingsProps> = ({
     const [selectedTheme, setSelectedTheme] = useState<ThemeName>(currentTheme as ThemeName)
     const [newSoundsEnabled, setNewSoundsEnabled] = useState(soundsEnabled)
     const [newYoutubePlayerVisible, setNewYoutubePlayerVisible] = useState(youtubePlayerVisible)
+    const [newKeepRunningOnTransition, setNewKeepRunningOnTransition] = useState(keepRunningOnTransition)
     const [workDurationError, setWorkDurationError] = useState<string | null>(null)
     const [shortBreakDurationError, setShortBreakDurationError] = useState<string | null>(null)
     const [longBreakDurationError, setLongBreakDurationError] = useState<string | null>(null)
@@ -334,6 +339,7 @@ export const Settings: React.FC<SettingsProps> = ({
             selectedTheme,
             newSoundsEnabled,
             newYoutubePlayerVisible,
+            newKeepRunningOnTransition,
             durationChanges
         );
     }
@@ -355,6 +361,7 @@ export const Settings: React.FC<SettingsProps> = ({
             setSelectedTheme(DEFAULT_SETTINGS.theme);
         setNewSoundsEnabled(DEFAULT_SETTINGS.soundsEnabled);
         setNewYoutubePlayerVisible(DEFAULT_SETTINGS.youtubePlayerVisible);
+        setNewKeepRunningOnTransition(DEFAULT_SETTINGS.keepRunningOnTransition);
 
         onSave(
             DEFAULT_SETTINGS.durations,
@@ -365,6 +372,7 @@ export const Settings: React.FC<SettingsProps> = ({
             DEFAULT_SETTINGS.theme,
             DEFAULT_SETTINGS.soundsEnabled,
                 DEFAULT_SETTINGS.youtubePlayerVisible,
+                DEFAULT_SETTINGS.keepRunningOnTransition,
                 { work: true, shortBreak: true, longBreak: true }
             );
         }
@@ -560,6 +568,18 @@ export const Settings: React.FC<SettingsProps> = ({
                                                     <span className="label-text-alt text-error">{workSessionError}</span>
                                                 </label>
                                             )}
+                                        </div>
+
+                                        <div className="form-control">
+                                            <label className="label cursor-pointer justify-between">
+                                                <span className="label-text">Keep timer running on transition</span>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={newKeepRunningOnTransition}
+                                                    onChange={(e) => setNewKeepRunningOnTransition(e.target.checked)}
+                                                    className="toggle toggle-primary"
+                                                />
+                                            </label>
                                         </div>
                                     </div>
                                 </div>

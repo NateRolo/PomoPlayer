@@ -34,6 +34,7 @@ export function usePomodoroTimer() {
     const [hasStarted, setHasStarted] = useState(false) // Track if timer was ever started in the current session
     const [isYouTubePlaying, setIsYouTubePlaying] = useState(false) // Track YouTube player state separately
     const [alarmAudio, setAlarmAudio] = useState<HTMLAudioElement | null>(null)
+    const [keepRunningOnTransition, setKeepRunningOnTransition] = useState(false) // <-- New state
     const soundIntervalRef = useRef<NodeJS.Timeout | null>(null)
     const pauseTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -72,41 +73,66 @@ export function usePomodoroTimer() {
     }, [soundsEnabled]);
 
     // --- Core Timer Logic ---
-    const handleSessionComplete = useCallback(() => {
-        if (player) player.pauseVideo();
-        setIsActive(false);
-        setHasStarted(false); // Reset start tracker
+    const handleSessionComplete = useCallback((options?: { playSound?: boolean, showAlert?: boolean }) => {
+        const playSound = options?.playSound ?? true;
+        const showAlert = options?.showAlert ?? true;
 
+        // Only pause player and timer if keepRunningOnTransition is false
+        if (!keepRunningOnTransition) {
+            if (player) player.pauseVideo();
+            setIsActive(false);
+            setHasStarted(false); // Only reset start tracker if timer stops
+        } else {
+             // If keepRunning is true, we still might want to pause the player
+             // depending on the next session type (e.g., pause during breaks)
+             // We'll determine the next session type first.
+        }
+
+        // Determine next session
         let nextSessionType: SessionType;
         let newSessionCount = sessionCount;
         let alertMessage: string;
-
+        
         if (sessionType === "work") {
             newSessionCount = sessionCount + 1;
-            if (newSessionCount >= sessionsUntilLongBreak) {
-                nextSessionType = "longBreak";
-                alertMessage = "Time for a long break!";
-            } else {
-                nextSessionType = "shortBreak";
-                alertMessage = "Time for a short break!";
-            }
+            nextSessionType = newSessionCount >= sessionsUntilLongBreak ? "longBreak" : "shortBreak";
+            alertMessage = nextSessionType === "longBreak" ? "Time for a long break!" : "Time for a short break!";
         } else { // shortBreak or longBreak
-            if (sessionType === "longBreak") {
-                newSessionCount = 0; // Reset cycle
-            }
+            if (sessionType === "longBreak") newSessionCount = 0; // Reset cycle
             nextSessionType = "work";
             alertMessage = "Time to focus!";
         }
 
-        playAlarm();
-        alert(alertMessage); // Consider replacing alert with a less disruptive notification
-        stopAlarm();
+        // If keepRunning is true, handle player state for the *next* session
+        if (keepRunningOnTransition && player) {
+            if (nextSessionType === "work") {
+                // If transitioning TO a work session, ensure video plays
+                player.playVideo();
+            } else {
+                // If transitioning TO a break session, pause video
+                player.pauseVideo();
+            }
+        }
 
+        // Conditionally play sound and show alert
+        if (playSound) playAlarm();
+        if (showAlert) alert(alertMessage);
+        if (playSound) stopAlarm();
+
+        // Update session state
         setSessionCount(newSessionCount);
         setSessionType(nextSessionType);
         setTimeLeft(durations[nextSessionType]);
+        
+        // Ensure isActive is true if keepRunning
+        if (keepRunningOnTransition) {
+            setIsActive(true); 
+            // Ensure hasStarted remains true if timer continues
+            setHasStarted(true);
+        } 
 
-    }, [player, sessionCount, sessionType, durations, sessionsUntilLongBreak, playAlarm, stopAlarm]);
+    // Add keepRunningOnTransition to dependencies
+    }, [player, sessionCount, sessionType, durations, sessionsUntilLongBreak, playAlarm, stopAlarm, keepRunningOnTransition, isActive]); // Added keepRunningOnTransition and isActive
 
     // --- Settings Persistence ---
     useEffect(() => {
@@ -131,6 +157,9 @@ export function usePomodoroTimer() {
 
         const storedPlayerVisible = localStorage.getItem("youtubePlayerVisible");
         if (storedPlayerVisible !== null) setYoutubePlayerVisible(JSON.parse(storedPlayerVisible));
+        
+        const storedKeepRunning = localStorage.getItem("keepRunningOnTransition");
+        if (storedKeepRunning !== null) setKeepRunningOnTransition(JSON.parse(storedKeepRunning)); // <-- Load new setting
         
         const storedTheme = localStorage.getItem("theme") as ThemeName || "dark";
         setCurrentTheme(storedTheme);
@@ -157,7 +186,8 @@ export function usePomodoroTimer() {
                 setTimeLeft((prevTime) => prevTime - 1);
             }, 1000);
         } else if (isActive && timeLeft === 0) {
-            handleSessionComplete();
+            // Call with defaults (sound and alert enabled)
+            handleSessionComplete(); 
         }
         return () => {
             if (interval) clearInterval(interval);
@@ -235,7 +265,8 @@ export function usePomodoroTimer() {
 
     const skipSession = useCallback(() => {
         setHasStarted(false); // Reset start tracker for next session
-        handleSessionComplete();
+        // Call with sound and alert explicitly disabled
+        handleSessionComplete({ playSound: false, showAlert: false }); 
          // Clear pause prompt state
         if (pauseTimeoutRef.current) clearTimeout(pauseTimeoutRef.current);
         if (soundIntervalRef.current) clearInterval(soundIntervalRef.current);
@@ -266,8 +297,8 @@ export function usePomodoroTimer() {
         newPausePromptDelay: number,
         newTheme: ThemeName,
         newSoundsEnabled: boolean,
-        newYoutubePlayerVisible: boolean
-        // Removed durationChanges as direct comparison is complex; reset logic handled differently
+        newYoutubePlayerVisible: boolean,
+        newKeepRunningOnTransition: boolean // <-- Add new parameter
     ) => {
         const currentDuration = durations[sessionType];
         const newDuration = newDurations[sessionType];
@@ -282,6 +313,7 @@ export function usePomodoroTimer() {
         setCurrentTheme(newTheme);
         setSoundsEnabled(newSoundsEnabled);
         setYoutubePlayerVisible(newYoutubePlayerVisible);
+        setKeepRunningOnTransition(newKeepRunningOnTransition); // <-- Update state
         document.documentElement.setAttribute("data-theme", newTheme);
 
         // Persist settings
@@ -293,6 +325,7 @@ export function usePomodoroTimer() {
         localStorage.setItem("theme", newTheme);
         localStorage.setItem("soundsEnabled", JSON.stringify(newSoundsEnabled));
         localStorage.setItem("youtubePlayerVisible", JSON.stringify(newYoutubePlayerVisible));
+        localStorage.setItem("keepRunningOnTransition", JSON.stringify(newKeepRunningOnTransition)); // <-- Persist new setting
 
         // Reset timer state ONLY if the duration for the CURRENT session type changed and timer inactive
         if (durationChanged && !isActive) {
@@ -336,7 +369,7 @@ export function usePomodoroTimer() {
             pauseTimeoutRef.current = null;
         }
 
-        setShowPausePrompt(false); // Hide prompt regardless of action
+        setShowPausePrompt(false); // Hide prompt initially regardless of action
 
         switch (action) {
             case "continue":
@@ -346,14 +379,17 @@ export function usePomodoroTimer() {
                 resetTimer();
                 break;
             case "remind":
-                 // Set a new timeout for the reminder sound
+                 // Set a new timeout for the reminder sound AND to show the prompt again
                 pauseTimeoutRef.current = setTimeout(() => {
+                    setShowPausePrompt(true);
                     playPausePromptSound();
-                    soundIntervalRef.current = setInterval(playPausePromptSound, 5000); // Restart interval
+                    // Restart the interval for subsequent sounds *after* the prompt reappears
+                    soundIntervalRef.current = setInterval(playPausePromptSound, 5000); 
                 }, 2 * 60 * 1000); // Remind after 2 minutes
                 break;
         }
-    }, [toggleTimer, resetTimer, playPausePromptSound]); // Dependencies
+    // Dependencies should include setShowPausePrompt if not already inferred by ESLint rule
+    }, [toggleTimer, resetTimer, playPausePromptSound /*, setShowPausePrompt */ ]); 
 
 
      // --- YouTube Player Handlers ---
@@ -427,5 +463,6 @@ export function usePomodoroTimer() {
 
         // Utilities?
         formatTime, // Pass to TimerDisplay component
+        keepRunningOnTransition, // <-- Return new state
     };
 } 
