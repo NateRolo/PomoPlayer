@@ -13,6 +13,7 @@ import { Header } from "./PomodoroTimer/Header"
 import { SessionSelector } from "./PomodoroTimer/SessionSelector"
 import { TimerDisplay } from "./PomodoroTimer/TimerDisplay"
 import { TimerControls } from "./PomodoroTimer/TimerControls"
+import { ActionBar } from "./PomodoroTimer/ActionBar"
 
 /**
  * PomodoroTimer is the main component of the application, implementing the Pomodoro Technique
@@ -98,19 +99,11 @@ export const PomodoroTimer: React.FC = () => {
                             onSkipSession={skipSession}
                         />
 
-                        {/* Action buttons (Settings, Videos) - Extract next? */}
-                        <div className="w-full max-w-md min-w-[300px] grid grid-cols-2 gap-2">
-                                <button
-                                    className="btn btn-neutral hover:btn-info transform transition-all duration-200 hover:scale-105 active:scale-95"
-                                    onClick={() => setShowSettings(true)}>
-                                    Settings
-                                </button>
-                                <button
-                                    className="btn btn-neutral hover:btn-success transform transition-all duration-200 hover:scale-105 active:scale-95"
-                                    onClick={() => setShowVideoLibrary(true)}>
-                                    Videos
-                                </button>
-                        </div>
+                        {/* Use ActionBar component */}
+                        <ActionBar
+                            onShowSettings={() => setShowSettings(true)}
+                            onShowVideoLibrary={() => setShowVideoLibrary(true)}
+                        />
                     </div>
                 </div>
 
