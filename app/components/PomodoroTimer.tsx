@@ -11,6 +11,7 @@ import { usePomodoroTimer, SessionType } from "../hooks/usePomodoroTimer"
 import { MiniPlayer } from "./PomodoroTimer/MiniPlayer"
 import { Header } from "./PomodoroTimer/Header"
 import { SessionSelector } from "./PomodoroTimer/SessionSelector"
+import { TimerDisplay } from "./PomodoroTimer/TimerDisplay"
 
 /**
  * PomodoroTimer is the main component of the application, implementing the Pomodoro Technique
@@ -81,13 +82,12 @@ export const PomodoroTimer: React.FC = () => {
                             onChangeSessionType={changeSessionType}
                         />
 
-                        {/* Timer display */}
-                        <div className="relative my-2">
-                             {/* Use formatTime and timeLeft from hook */} 
-                            <div className={`text-7xl sm:text-8xl md:text-9xl font-bold tracking-tight ${currentThemeColors.text} whitespace-nowrap`}>
-                                {formatTime(timeLeft)}
-                            </div>
-                        </div>
+                        {/* Use TimerDisplay component */}
+                        <TimerDisplay 
+                            timeLeft={timeLeft} 
+                            formatTime={formatTime} 
+                            currentThemeColors={currentThemeColors} 
+                        />
 
                         {/* Control buttons */}
                         <div className="w-full flex flex-col gap-2 max-w-md min-w-[300px]">
