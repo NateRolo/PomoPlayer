@@ -13,17 +13,17 @@ export const SessionSelector: React.FC<SessionSelectorProps> = ({
     return (
         <div className="w-full max-w-md mx-auto grid grid-cols-3 gap-2 min-w-[300px]">
             <button
-                className={`btn w-full ${currentSessionType === "work" ? "btn-primary" : "btn-ghost hover:btn-primary"}`}
+                className={`btn w-full border border-base-content/20 ${currentSessionType === "work" ? "btn-primary" : "btn-ghost hover:btn-primary"}`}
                 onClick={() => onChangeSessionType("work")}>
                 Focus
             </button>
             <button
-                className={`btn w-full ${currentSessionType === "shortBreak" ? "btn-primary" : "btn-ghost hover:btn-primary"}`}
+                className={`btn w-full border border-base-content/20 ${currentSessionType === "shortBreak" ? "btn-primary" : "btn-ghost hover:btn-primary"}`}
                 onClick={() => onChangeSessionType("shortBreak")}>
                 Break
             </button>
             <button
-                className={`btn w-full ${currentSessionType === "longBreak" ? "btn-primary" : "btn-ghost hover:btn-primary"}`}
+                className={`btn w-full border border-base-content/20 ${currentSessionType === "longBreak" ? "btn-primary" : "btn-ghost hover:btn-primary"}`}
                 onClick={() => onChangeSessionType("longBreak")}>
                 Long Break
             </button>

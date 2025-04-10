@@ -12,12 +12,12 @@ export const ActionBar: React.FC<ActionBarProps> = ({
     return (
         <div className="w-full max-w-md min-w-[300px] grid grid-cols-2 gap-2">
             <button
-                className="btn btn-neutral hover:btn-info transform transition-all duration-200 hover:scale-105 active:scale-95"
+                className="btn btn-neutral hover:btn-info border border-base-content/20 transform transition-all duration-200 hover:scale-105 active:scale-95"
                 onClick={onShowSettings}>
                 Settings
             </button>
             <button
-                className="btn btn-neutral hover:btn-success transform transition-all duration-200 hover:scale-105 active:scale-95"
+                className="btn btn-neutral hover:btn-success border border-base-content/20 transform transition-all duration-200 hover:scale-105 active:scale-95"
                 onClick={onShowVideoLibrary}>
                 Videos
             </button>

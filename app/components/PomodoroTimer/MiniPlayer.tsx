@@ -10,10 +10,10 @@ export const MiniPlayer: React.FC<{
     videoTitle: string;
 }> = ({ isPlaying, onTogglePlay, onShowPlayer, videoTitle }) => {
     return (
-        <div className="fixed bottom-4 right-4 flex items-center gap-2 bg-base-200 p-2 rounded-lg shadow-lg z-50">
-            {/* Added z-50 to ensure it appears above other elements */}
+        <div className="fixed bottom-4 right-4 flex items-center gap-2 bg-base-200 p-2 rounded-lg shadow-lg z-50 border border-base-content/10">
+            {/* Added z-50 to ensure it appears above other elements and a faint border to the container */}
             <button 
-                className={`btn btn-circle btn-sm ${isPlaying ? 'btn-primary' : 'btn-ghost'}`}
+                className={`btn btn-circle btn-sm border border-base-content/20 ${isPlaying ? 'btn-primary' : 'btn-ghost'}`}
                 onClick={onTogglePlay}
                 title={isPlaying ? 'Pause' : 'Play'}
             >
@@ -30,7 +30,7 @@ export const MiniPlayer: React.FC<{
             </button>
             <span className="text-sm font-medium truncate max-w-xs">{videoTitle}</span> {/* Added truncate and max-width */}
             <button 
-                className="btn btn-circle btn-sm btn-ghost"
+                className="btn btn-circle btn-sm btn-ghost border border-base-content/20"
                 onClick={onShowPlayer}
                 title="Show video player"
             >
