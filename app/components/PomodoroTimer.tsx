@@ -56,19 +56,17 @@ export const PomodoroTimer: React.FC = () => {
         formatTime,
     } = usePomodoroTimer();
 
-    // TODO: Define currentThemeColors based on currentTheme 
-    // This logic should ideally live elsewhere (e.g., theme context or utility)
+    // Correct theme color logic
     const currentThemeColors = {
-        background: currentTheme === 'light' ? 'bg-base-100' : 'bg-neutral',
-        text: currentTheme === 'light' ? 'text-neutral-content' : 'text-neutral-content',
-        // Add other color mappings as needed
+        background: currentTheme === 'light' ? 'bg-base-100' : 'bg-neutral', // Assuming dark uses neutral
+        text: currentTheme === 'light' ? 'text-base-content' : 'text-neutral-content', // Use base-content for light theme
     };
 
     return (
         <>
             {/* Main container */}
             {/* Use state/values from the hook */}
-            <div className={`h-screen flex flex-col transition-all duration-700 ${currentThemeColors.background}`}>
+            <div className={`h-screen flex flex-col transition-colors duration-500 ${currentThemeColors.background}`}>
                 {/* Fixed height section */}
                 <div className="w-full flex-none py-4">
                     <div className="max-w-4xl mx-auto flex flex-col items-center gap-4 min-w-[320px]">
