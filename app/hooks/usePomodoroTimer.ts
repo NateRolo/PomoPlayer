@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import type { YouTubePlayer } from 'react-youtube'
 import { ThemeName } from '@/app/types/theme' // Assuming this path is correct
+import toast from 'react-hot-toast'
 
 export type SessionType = "work" | "shortBreak" | "longBreak"
 
@@ -114,9 +115,9 @@ export function usePomodoroTimer() {
             }
         }
 
-        // Conditionally play sound and show alert
+        // Conditionally play sound and show toast
         if (playSound) playAlarm();
-        if (showAlert) alert(alertMessage);
+        if (showAlert) toast(alertMessage);
         if (playSound) stopAlarm();
 
         // Update session state
