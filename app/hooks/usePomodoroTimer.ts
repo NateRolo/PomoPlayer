@@ -326,12 +326,8 @@ export function usePomodoroTimer() {
         // Reset timer state ONLY if the duration for the CURRENT session type changed and timer inactive
         if (durationChanged && !isActive) {
             setTimeLeft(newDuration);
-            setHasStarted(false); // If duration changes, treat as a reset
-        } else if (durationChanged && isActive){
-             // Optionally, notify user that timer keeps running with old duration until next session/reset?
-             // Or force reset? For simplicity, let's keep it running but maybe add a console warning.
-             console.warn("Timer duration changed while active. New duration will apply on next session start or reset.");
-        }
+            setHasStarted(false); 
+        } 
 
         setShowSettings(false); // Close settings modal
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -385,8 +381,6 @@ export function usePomodoroTimer() {
                 }, 2 * 60 * 1000); // Remind after 2 minutes
                 break;
             default:
-                // Optional: Handle unexpected string values
-                console.warn("Unknown pause prompt action:", action);
                 break;
         }
     }, [toggleTimer, resetTimer, playPausePromptSound]);

@@ -110,17 +110,6 @@ export const PomodoroTimer: React.FC = () => {
                             currentTheme={currentTheme}
                             onToggleTheme={toggleTheme}
                         />
-
-                        {/* Temporary Test Button */}
-                        <div className="w-full max-w-md min-w-[300px] mt-2">
-                            <button
-                                className="btn btn-warning btn-outline w-full btn-sm" 
-                                onClick={() => handleSessionComplete()} // Call with default options
-                                title="Simulate session end with sound/toast"
-                            >
-                                Test Session End (Dev)
-                            </button>
-                        </div>
                     </div>
                 </div>
 
