@@ -308,6 +308,14 @@ export function usePomodoroTimer() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [sessionType, isActive, durations]); // Include durations here
 
+    // --- NEW: Theme Toggle Function ---
+    const toggleTheme = useCallback(() => {
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        setCurrentTheme(newTheme);
+        localStorage.setItem("theme", newTheme);
+        document.documentElement.setAttribute("data-theme", newTheme);
+    }, [currentTheme]);
+
     // --- Pause Prompt Action Handler ---
     const handlePausePromptAction = useCallback((action: "continue" | "reset" | "remind") => {
         // Clear current sound interval first
@@ -407,6 +415,7 @@ export function usePomodoroTimer() {
         setYoutubePlayerVisible,
         onPlayerReady, // Pass to YouTube component
         handleYouTubePlayPause, // Pass to MiniPlayer/controls
+        toggleTheme, // <-- Add the new function here
 
         // Utilities?
         formatTime, // Pass to TimerDisplay component

@@ -53,6 +53,7 @@ export const PomodoroTimer: React.FC = () => {
         setYoutubePlayerVisible,
         onPlayerReady,
         handleYouTubePlayPause,
+        toggleTheme,
         formatTime,
     } = usePomodoroTimer();
 
@@ -103,6 +104,8 @@ export const PomodoroTimer: React.FC = () => {
                         <ActionBar
                             onShowSettings={() => setShowSettings(true)}
                             onShowVideoLibrary={() => setShowVideoLibrary(true)}
+                            currentTheme={currentTheme}
+                            onToggleTheme={toggleTheme}
                         />
                     </div>
                 </div>
