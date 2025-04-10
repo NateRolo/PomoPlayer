@@ -1,10 +1,11 @@
 "use client"
 
 import type React from "react"
-import YouTube from "react-youtube"
+// Remove direct import of YouTube if no longer needed here
+// import YouTube from "react-youtube"
 import { Settings } from "./Settings"
 import { PausePrompt } from "./PausePrompt"
-import type { YouTubePlayer } from 'react-youtube'
+import type { YouTubePlayer } from 'react-youtube' // Keep type if needed for player instance in hook
 import { ThemeName } from '../types/theme'
 import { VideoLibrary } from "./VideoLibrary"
 import { usePomodoroTimer, SessionType } from "../hooks/usePomodoroTimer"
@@ -14,6 +15,7 @@ import { SessionSelector } from "./PomodoroTimer/SessionSelector"
 import { TimerDisplay } from "./PomodoroTimer/TimerDisplay"
 import { TimerControls } from "./PomodoroTimer/TimerControls"
 import { ActionBar } from "./PomodoroTimer/ActionBar"
+import { YouTubePlayerWrapper } from "./PomodoroTimer/YouTubePlayerWrapper"; // Import YouTubePlayerWrapper
 
 /**
  * PomodoroTimer is the main component of the application, implementing the Pomodoro Technique
@@ -107,25 +109,16 @@ export const PomodoroTimer: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Scrollable section for YouTube player */}
+                {/* Scrollable section - Use YouTubePlayerWrapper */}
                 <div className="flex-1 overflow-y-auto">
                     <div className="w-full max-w-2xl mx-auto p-4">
-                         {/* Use youtubePlayerVisible, youtubeUrl, isActive, sessionType, onPlayerReady from hook */} 
-                        <div className={`${youtubePlayerVisible ? "relative w-full aspect-video" : "hidden"}`}>
-                            <YouTube
-                                videoId={youtubeUrl.split("v=")[1]} // Consider moving URL parsing to hook or player component
-                                opts={{
-                                    height: "100%",
-                                    width: "100%",
-                                    playerVars: {
-                                        // Autoplay logic might be simplified/moved if hook controls player state
-                                        autoplay: isActive && sessionType === "work" ? 1 : 0, 
-                                    },
-                                }}
-                                onReady={onPlayerReady}
-                                className="w-full h-full"
-                            />
-                        </div>
+                        <YouTubePlayerWrapper
+                            youtubeUrl={youtubeUrl}
+                            isVisible={youtubePlayerVisible}
+                            isActive={isActive}
+                            sessionType={sessionType}
+                            onPlayerReady={onPlayerReady}
+                        />
                     </div>
                 </div>
             </div>
