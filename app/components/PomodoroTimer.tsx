@@ -56,6 +56,7 @@ export const PomodoroTimer: React.FC = () => {
         toggleTheme,
         formatTime,
         keepRunningOnTransition,
+        handleSessionComplete,
     } = usePomodoroTimer();
 
     // Correct theme color logic
@@ -109,6 +110,17 @@ export const PomodoroTimer: React.FC = () => {
                             currentTheme={currentTheme}
                             onToggleTheme={toggleTheme}
                         />
+
+                        {/* Temporary Test Button */}
+                        <div className="w-full max-w-md min-w-[300px] mt-2">
+                            <button
+                                className="btn btn-warning btn-outline w-full btn-sm" 
+                                onClick={() => handleSessionComplete()} // Call with default options
+                                title="Simulate session end with sound/toast"
+                            >
+                                Test Session End (Dev)
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -154,7 +166,7 @@ export const PomodoroTimer: React.FC = () => {
                 <VideoLibrary
                     onSelectVideo={(url) => {
                         // Use setYoutubeUrl from hook
-                        setYoutubeUrl(url); 
+                        setYoutubeUrl(url);
                         setShowVideoLibrary(false);
                         // Persisting URL now happens within handleSettingsChange or dedicated hook logic
                         // localStorage.setItem('youtubeUrl', url); 

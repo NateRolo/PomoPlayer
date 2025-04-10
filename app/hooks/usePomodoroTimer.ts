@@ -33,38 +33,31 @@ export function usePomodoroTimer() {
     const [youtubePlayerVisible, setYoutubePlayerVisible] = useState(true) // Keep UI state separate? Maybe move later.
     const [showVideoLibrary, setShowVideoLibrary] = useState(false) // Keep UI state separate? Maybe move later.
     const [hasStarted, setHasStarted] = useState(false) // Track if timer was ever started in the current session
-    const [isYouTubePlaying, setIsYouTubePlaying] = useState(false) // Track YouTube player state separately
-    const [alarmAudio, setAlarmAudio] = useState<HTMLAudioElement | null>(null)
-    const [keepRunningOnTransition, setKeepRunningOnTransition] = useState(false) // <-- New state
+    const [isYouTubePlaying, setIsYouTubePlaying] = useState(false)
+    const alarmAudio = useRef<HTMLAudioElement | null>(null)
+    const [keepRunningOnTransition, setKeepRunningOnTransition] = useState(false)
     const soundIntervalRef = useRef<NodeJS.Timeout | null>(null)
     const pauseTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
     // --- Sound Effects ---
     useEffect(() => {
         const audio = new Audio("/sounds/notification2.mp3");
-        audio.loop = true;
-        setAlarmAudio(audio);
-        // Cleanup function to pause and reset audio when component unmounts or audio changes
+        alarmAudio.current = audio;
         return () => {
-            audio.pause();
-            audio.currentTime = 0;
+            if (alarmAudio.current) {
+                alarmAudio.current.pause();
+                alarmAudio.current.currentTime = 0;
+            }
         };
     }, []);
 
     const playAlarm = useCallback(() => {
-        if (soundsEnabled && alarmAudio) {
-            alarmAudio.play().catch(console.error);
-            // Optional: Stop after a short duration if continuous loop is too much
-            // setTimeout(() => stopAlarm(), 5000); 
+        if (soundsEnabled && alarmAudio.current) {
+            // Ensure sound plays from the beginning if called again quickly
+            alarmAudio.current.currentTime = 0;
+            alarmAudio.current.play().catch(err => console.error("Error playing alarm:", err));
         }
-    }, [soundsEnabled, alarmAudio]);
-
-    const stopAlarm = useCallback(() => {
-        if (alarmAudio) {
-            alarmAudio.pause();
-            alarmAudio.currentTime = 0;
-        }
-    }, [alarmAudio]);
+    }, [soundsEnabled]);
 
     const playPausePromptSound = useCallback(() => {
         if (soundsEnabled) {
@@ -116,9 +109,13 @@ export function usePomodoroTimer() {
         }
 
         // Conditionally play sound and show toast
-        if (playSound) playAlarm();
-        if (showAlert) toast(alertMessage);
-        if (playSound) stopAlarm();
+        if (playSound) {
+            playAlarm();
+        }
+        
+        if (showAlert) {
+            toast(alertMessage);
+        }
 
         // Update session state
         setSessionCount(newSessionCount);
@@ -128,12 +125,10 @@ export function usePomodoroTimer() {
         // Ensure isActive is true if keepRunning
         if (keepRunningOnTransition) {
             setIsActive(true); 
-            // Ensure hasStarted remains true if timer continues
             setHasStarted(true);
         } 
 
-    // Add keepRunningOnTransition to dependencies
-    }, [player, sessionCount, sessionType, durations, sessionsUntilLongBreak, playAlarm, stopAlarm, keepRunningOnTransition, isActive]); // Added keepRunningOnTransition and isActive
+    }, [player, sessionCount, sessionType, durations, sessionsUntilLongBreak, playAlarm, keepRunningOnTransition]); 
 
     // --- Settings Persistence ---
     useEffect(() => {
@@ -187,12 +182,12 @@ export function usePomodoroTimer() {
                 setTimeLeft((prevTime) => prevTime - 1);
             }, 1000);
         } else if (isActive && timeLeft === 0) {
-            // Call with defaults (sound and alert enabled)
             handleSessionComplete(); 
         }
         return () => {
             if (interval) clearInterval(interval);
         };
+    // Ensure handleSessionComplete is stable or included if its identity changes
     }, [isActive, timeLeft, handleSessionComplete]);
 
     // --- Pause Prompt Effect ---
@@ -359,7 +354,7 @@ export function usePomodoroTimer() {
     }, [currentTheme]);
 
     // --- Pause Prompt Action Handler ---
-    const handlePausePromptAction = useCallback((action: "continue" | "reset" | "remind") => {
+    const handlePausePromptAction = useCallback((action: string) => {
         // Clear current sound interval first
         if (soundIntervalRef.current) {
             clearInterval(soundIntervalRef.current);
@@ -372,9 +367,10 @@ export function usePomodoroTimer() {
 
         setShowPausePrompt(false); // Hide prompt initially regardless of action
 
-        switch (action) {
+        // Use type assertion inside switch
+        switch (action as "continue" | "reset" | "remind") { 
             case "continue":
-                toggleTimer(); // This will set isActive=true and handle player
+                toggleTimer(); 
                 break;
             case "reset":
                 resetTimer();
@@ -388,9 +384,12 @@ export function usePomodoroTimer() {
                     soundIntervalRef.current = setInterval(playPausePromptSound, 5000); 
                 }, 2 * 60 * 1000); // Remind after 2 minutes
                 break;
+            default:
+                // Optional: Handle unexpected string values
+                console.warn("Unknown pause prompt action:", action);
+                break;
         }
-    // Dependencies should include setShowPausePrompt if not already inferred by ESLint rule
-    }, [toggleTimer, resetTimer, playPausePromptSound /*, setShowPausePrompt */ ]); 
+    }, [toggleTimer, resetTimer, playPausePromptSound]);
 
 
      // --- YouTube Player Handlers ---
@@ -465,5 +464,6 @@ export function usePomodoroTimer() {
         // Utilities?
         formatTime, // Pass to TimerDisplay component
         keepRunningOnTransition, // <-- Return new state
+        handleSessionComplete, // <-- Add missing function here
     };
 } 
