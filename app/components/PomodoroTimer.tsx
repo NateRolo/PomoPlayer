@@ -10,6 +10,7 @@ import { VideoLibrary } from "./VideoLibrary"
 import { usePomodoroTimer, SessionType } from "../hooks/usePomodoroTimer"
 import { MiniPlayer } from "./PomodoroTimer/MiniPlayer"
 import { Header } from "./PomodoroTimer/Header"
+import { SessionSelector } from "./PomodoroTimer/SessionSelector"
 
 /**
  * PomodoroTimer is the main component of the application, implementing the Pomodoro Technique
@@ -74,25 +75,11 @@ export const PomodoroTimer: React.FC = () => {
                             currentThemeColors={currentThemeColors} 
                         />
 
-                        {/* Session type selector */}
-                        <div className="w-full max-w-md mx-auto grid grid-cols-3 gap-2 min-w-[300px]">
-                            {/* Use changeSessionType from hook */}
-                            <button
-                                className={`btn w-full ${sessionType === "work" ? "btn-primary" : "btn-ghost hover:btn-primary"}`}
-                                onClick={() => changeSessionType("work")}>
-                                Focus
-                            </button>
-                            <button
-                                className={`btn w-full ${sessionType === "shortBreak" ? "btn-primary" : "btn-ghost hover:btn-primary"}`}
-                                onClick={() => changeSessionType("shortBreak")}>
-                                Break
-                            </button>
-                            <button
-                                className={`btn w-full ${sessionType === "longBreak" ? "btn-primary" : "btn-ghost hover:btn-primary"}`}
-                                onClick={() => changeSessionType("longBreak")}>
-                                Long Break
-                            </button>
-                        </div>
+                        {/* Use SessionSelector component */}
+                        <SessionSelector 
+                            currentSessionType={sessionType} 
+                            onChangeSessionType={changeSessionType}
+                        />
 
                         {/* Timer display */}
                         <div className="relative my-2">
