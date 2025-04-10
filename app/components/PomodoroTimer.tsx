@@ -9,6 +9,7 @@ import { ThemeName } from '../types/theme'
 import { VideoLibrary } from "./VideoLibrary"
 import { usePomodoroTimer, SessionType } from "../hooks/usePomodoroTimer"
 import { MiniPlayer } from "./PomodoroTimer/MiniPlayer"
+import { Header } from "./PomodoroTimer/Header"
 
 /**
  * PomodoroTimer is the main component of the application, implementing the Pomodoro Technique
@@ -65,19 +66,13 @@ export const PomodoroTimer: React.FC = () => {
                 {/* Fixed height section */}
                 <div className="w-full flex-none py-4">
                     <div className="max-w-4xl mx-auto flex flex-col items-center gap-4 min-w-[320px]">
-                        {/* Header */}
-                        <div className="flex flex-col items-center gap-2">
-                            <h1 className={`text-4xl font-bold bg-clip-text bg-gradient-to-r ${currentThemeColors.text} whitespace-nowrap`}>
-                                PomoPlayer
-                            </h1>
-                            <div className={`text-l font-medium opacity-80 ${currentThemeColors.text} whitespace-nowrap`}>
-                                {sessionType === "work"
-                                    ? `Focus Session ${sessionCount + 1}/${sessionsUntilLongBreak}`
-                                    : sessionType === "shortBreak"
-                                        ? "Short Break"
-                                        : "Long Break"}
-                            </div>
-                        </div>
+                        {/* Use Header component */}
+                        <Header 
+                            sessionType={sessionType} 
+                            sessionCount={sessionCount} 
+                            sessionsUntilLongBreak={sessionsUntilLongBreak} 
+                            currentThemeColors={currentThemeColors} 
+                        />
 
                         {/* Session type selector */}
                         <div className="w-full max-w-md mx-auto grid grid-cols-3 gap-2 min-w-[300px]">
