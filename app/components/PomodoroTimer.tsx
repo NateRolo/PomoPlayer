@@ -12,6 +12,7 @@ import { MiniPlayer } from "./PomodoroTimer/MiniPlayer"
 import { Header } from "./PomodoroTimer/Header"
 import { SessionSelector } from "./PomodoroTimer/SessionSelector"
 import { TimerDisplay } from "./PomodoroTimer/TimerDisplay"
+import { TimerControls } from "./PomodoroTimer/TimerControls"
 
 /**
  * PomodoroTimer is the main component of the application, implementing the Pomodoro Technique
@@ -89,41 +90,26 @@ export const PomodoroTimer: React.FC = () => {
                             currentThemeColors={currentThemeColors} 
                         />
 
-                        {/* Control buttons */}
-                        <div className="w-full flex flex-col gap-2 max-w-md min-w-[300px]">
-                            {/* Use toggleTimer and isActive from hook */} 
-                            <button
-                                className="btn btn-accent w-full transform transition-all duration-200 hover:scale-105 active:scale-95"
-                                onClick={toggleTimer}>
-                                {isActive ? "Pause" : "Start"}
-                            </button>
+                        {/* Use TimerControls component */}
+                        <TimerControls 
+                            isActive={isActive}
+                            onToggleTimer={toggleTimer}
+                            onResetTimer={resetTimer}
+                            onSkipSession={skipSession}
+                        />
 
-                            <div className="grid grid-cols-2 gap-2">
-                                {/* Use resetTimer from hook */} 
-                                <button
-                                    className="btn btn-neutral hover:btn-secondary transform transition-all duration-200 hover:scale-105 active:scale-95"
-                                    onClick={resetTimer}>
-                                    Reset Timer
-                                </button>
-                                 {/* Use skipSession from hook */} 
-                                <button
-                                    className="btn btn-neutral hover:btn-warning transform transition-all duration-200 hover:scale-105 active:scale-95"
-                                    onClick={skipSession}>
-                                    Skip Session
-                                </button>
-                                {/* Use setShowSettings from hook */} 
+                        {/* Action buttons (Settings, Videos) - Extract next? */}
+                        <div className="w-full max-w-md min-w-[300px] grid grid-cols-2 gap-2">
                                 <button
                                     className="btn btn-neutral hover:btn-info transform transition-all duration-200 hover:scale-105 active:scale-95"
                                     onClick={() => setShowSettings(true)}>
                                     Settings
                                 </button>
-                                {/* Use setShowVideoLibrary from hook */} 
                                 <button
                                     className="btn btn-neutral hover:btn-success transform transition-all duration-200 hover:scale-105 active:scale-95"
                                     onClick={() => setShowVideoLibrary(true)}>
                                     Videos
                                 </button>
-                            </div>
                         </div>
                     </div>
                 </div>
