@@ -27,7 +27,7 @@ export function usePomodoroTimer() {
     const [sessionsUntilLongBreak, setSessionsUntilLongBreak] = useState(4)
     const [pausePromptEnabled, setPausePromptEnabled] = useState(true)
     const [pausePromptDelay, setPausePromptDelay] = useState(2) // minutes
-    const [currentTheme, setCurrentTheme] = useState<ThemeName>('dark') // Default theme
+    const [currentTheme, setCurrentTheme] = useState<ThemeName>('dark')
     const [soundsEnabled, setSoundsEnabled] = useState(true)
     const [youtubePlayerVisible, setYoutubePlayerVisible] = useState(true) // Keep UI state separate? Maybe move later.
     const [showVideoLibrary, setShowVideoLibrary] = useState(false) // Keep UI state separate? Maybe move later.
@@ -308,9 +308,17 @@ export function usePomodoroTimer() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [sessionType, isActive, durations]); // Include durations here
 
-    // --- NEW: Theme Toggle Function ---
+    // --- NEW: Theme Toggle Function (Option 2 Logic) ---
     const toggleTheme = useCallback(() => {
-        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        let newTheme: ThemeName;
+        if (currentTheme === 'light') {
+            newTheme = 'dark';
+        } else if (currentTheme === 'dark') {
+            newTheme = 'light';
+        } else {
+            // If current theme is neither light nor dark, revert to light
+            newTheme = 'light'; 
+        }
         setCurrentTheme(newTheme);
         localStorage.setItem("theme", newTheme);
         document.documentElement.setAttribute("data-theme", newTheme);
