@@ -55,6 +55,7 @@ export const PomodoroTimer: React.FC = () => {
         handleYouTubePlayPause,
         toggleTheme,
         formatTime,
+        keepRunningOnTransition,
     } = usePomodoroTimer();
 
     // Correct theme color logic
@@ -65,12 +66,13 @@ export const PomodoroTimer: React.FC = () => {
 
     return (
         <>
-            {/* Main container */}
-            {/* Use state/values from the hook */}
-            <div className={`h-screen flex flex-col transition-colors duration-500 ${currentThemeColors.background}`}>
-                {/* Fixed height section */}
+            {/* Remove h-screen to allow natural page height and scrolling */}
+            <div className={`min-h-screen flex flex-col transition-colors duration-500 ${currentThemeColors.background}`}>
+                {/* Added min-h-screen as a replacement to ensure background covers at least the viewport height even if content is short */}
                 <div className="w-full flex-none py-4">
-                    <div className="max-w-4xl mx-auto flex flex-col items-center gap-4 min-w-[320px]">
+                    {/* Controls Section */}
+                    <div className="max-w-4xl mx-auto flex flex-col items-center gap-4 min-w-[300px] px-4 sm:px-0">
+                        {/* Added padding for very small screens */}
                         {/* Use Header component */}
                         <Header 
                             sessionType={sessionType} 
@@ -110,17 +112,17 @@ export const PomodoroTimer: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Scrollable section - Use YouTubePlayerWrapper */}
-                <div className="flex-1 overflow-y-auto">
-                    <div className="w-full max-w-2xl mx-auto p-4">
-                        <YouTubePlayerWrapper
-                            youtubeUrl={youtubeUrl}
-                            isVisible={youtubePlayerVisible}
-                            isActive={isActive}
-                            sessionType={sessionType}
-                            onPlayerReady={onPlayerReady}
-                        />
-                    </div>
+                {/* Video Section */}
+                {/* Removed flex-1 overflow-y-auto as the whole page scrolls now */}
+                {/* Added pb-16 or similar if MiniPlayer needs space */}
+                <div className="w-full max-w-2xl mx-auto p-4 pb-16"> 
+                    <YouTubePlayerWrapper
+                        youtubeUrl={youtubeUrl}
+                        isVisible={youtubePlayerVisible}
+                        isActive={isActive}
+                        sessionType={sessionType}
+                        onPlayerReady={onPlayerReady}
+                    />
                 </div>
             </div>
 
@@ -136,6 +138,7 @@ export const PomodoroTimer: React.FC = () => {
                     currentTheme={currentTheme}
                     soundsEnabled={soundsEnabled}
                     youtubePlayerVisible={youtubePlayerVisible}
+                    keepRunningOnTransition={keepRunningOnTransition}
                     // Pass handlers from hook
                     onSave={handleSettingsChange}
                     onClose={() => setShowSettings(false)}

@@ -50,7 +50,9 @@ export const ActionBar: React.FC<ActionBarProps> = ({
     }
 
     return (
-        <div className="w-full max-w-md min-w-[300px] grid grid-cols-3 gap-2">
+        // Stack vertically by default, use grid on medium screens
+        <div className="w-full max-w-md min-w-[300px] flex flex-col md:grid md:grid-cols-3 gap-2">
+            {/* Settings Button */}
             <button
                 className="btn btn-neutral hover:btn-info border border-base-content/20 transform transition-all duration-200 hover:scale-105 active:scale-95"
                 onClick={onShowSettings}
@@ -58,6 +60,7 @@ export const ActionBar: React.FC<ActionBarProps> = ({
             >
                 Settings
             </button>
+            {/* Videos Button */}
             <button
                 className="btn btn-neutral hover:btn-success border border-base-content/20 transform transition-all duration-200 hover:scale-105 active:scale-95"
                 onClick={onShowVideoLibrary}
@@ -65,6 +68,7 @@ export const ActionBar: React.FC<ActionBarProps> = ({
             >
                 Videos
             </button>
+            {/* Theme Toggle Button */}
             <button
                 className="btn btn-neutral hover:btn-warning border border-base-content/20 transform transition-all duration-200 hover:scale-105 active:scale-95"
                 onClick={onToggleTheme}

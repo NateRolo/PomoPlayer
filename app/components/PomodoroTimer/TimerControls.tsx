@@ -21,7 +21,7 @@ export const TimerControls: React.FC<TimerControlsProps> = ({
                 {isActive ? "Pause" : "Start"}
             </button>
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="flex flex-col md:grid md:grid-cols-2 gap-2">
                 <button
                     className="btn btn-neutral hover:btn-secondary border border-base-content/20 transform transition-all duration-200 hover:scale-105 active:scale-95"
                     onClick={onResetTimer}>

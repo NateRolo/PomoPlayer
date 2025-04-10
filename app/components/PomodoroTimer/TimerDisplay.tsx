@@ -13,7 +13,7 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({
 }) => {
     return (
         <div className="relative my-2">
-            <div className={`text-7xl sm:text-8xl md:text-9xl font-bold tracking-tight ${currentThemeColors.text} whitespace-nowrap`}>
+            <div className={`text-6xl sm:text-8xl md:text-9xl font-bold tracking-tight ${currentThemeColors.text} whitespace-nowrap`}>
                 {formatTime(timeLeft)}
             </div>
         </div>
