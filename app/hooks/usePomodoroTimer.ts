@@ -163,16 +163,14 @@ export function usePomodoroTimer() {
 
         // Set initial timeLeft based on potentially loaded durations and default sessionType
         setTimeLeft(storedDurations ? JSON.parse(storedDurations)["work"] : DEFAULT_DURATIONS.work);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []); // Runs only on mount
+    }, []);
 
     // Update timeLeft immediately if durations change (e.g., from settings) AND the timer isn't active
      useEffect(() => {
         if (!isActive) {
             setTimeLeft(durations[sessionType]);
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [durations, sessionType]); // Dependency on durations and sessionType
+    }, [durations, sessionType]);
 
     // --- Timer Countdown Effect ---
     useEffect(() => {
@@ -330,8 +328,7 @@ export function usePomodoroTimer() {
         } 
 
         setShowSettings(false); // Close settings modal
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [sessionType, isActive, durations]); // Include durations here
+    }, [sessionType, isActive, durations]);
 
     // --- NEW: Theme Toggle Function (Option 2 Logic) ---
     const toggleTheme = useCallback(() => {
