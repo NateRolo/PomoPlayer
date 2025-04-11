@@ -5,17 +5,19 @@ import type React from "react"
 // import YouTube from "react-youtube"
 import { Settings } from "./Settings"
 import { PausePrompt } from "./PausePrompt"
-import type { YouTubePlayer } from 'react-youtube' // Keep type if needed for player instance in hook
-import { ThemeName } from '../types/theme'
+// Remove unused imports
+// import type { YouTubePlayer } from 'react-youtube' 
+// import { ThemeName } from '../types/theme'
 import { VideoLibrary } from "./VideoLibrary"
-import { usePomodoroTimer, SessionType } from "../hooks/usePomodoroTimer"
+// Remove unused import
+import { usePomodoroTimer /*, SessionType */ } from "../hooks/usePomodoroTimer" 
 import { MiniPlayer } from "./PomodoroTimer/MiniPlayer"
 import { Header } from "./PomodoroTimer/Header"
 import { SessionSelector } from "./PomodoroTimer/SessionSelector"
 import { TimerDisplay } from "./PomodoroTimer/TimerDisplay"
 import { TimerControls } from "./PomodoroTimer/TimerControls"
 import { ActionBar } from "./PomodoroTimer/ActionBar"
-import { YouTubePlayerWrapper } from "./PomodoroTimer/YouTubePlayerWrapper"; // Import YouTubePlayerWrapper
+import { YouTubePlayerWrapper } from "./PomodoroTimer/YouTubePlayerWrapper"; 
 
 /**
  * PomodoroTimer is the main component of the application, implementing the Pomodoro Technique
@@ -37,7 +39,7 @@ export const PomodoroTimer: React.FC = () => {
         youtubeUrl,
         youtubePlayerVisible,
         isYouTubePlaying,
-        player, // May not be needed directly in the component after further refactoring
+        player, 
         showSettings,
         showPausePrompt,
         showVideoLibrary,
@@ -56,7 +58,7 @@ export const PomodoroTimer: React.FC = () => {
         toggleTheme,
         formatTime,
         keepRunningOnTransition,
-        handleSessionComplete,
+        // handleSessionComplete, // Remove unused variable
     } = usePomodoroTimer();
 
     // Correct theme color logic

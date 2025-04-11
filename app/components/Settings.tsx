@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
-import { DEFAULT_DURATIONS } from "./PomodoroTimer"
+import { DEFAULT_DURATIONS } from "../hooks/usePomodoroTimer"
 import { ThemeName } from '../types/theme'
 import { ThemePreview } from './ThemePreview'
 
