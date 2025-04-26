@@ -60,6 +60,8 @@ export const PomodoroTimer: React.FC = () => {
         toggleTheme,
         formatTime,
         keepRunningOnTransition,
+        sessionEndSound,
+        pausePromptSound,
         // handleSessionComplete, // Remove unused variable
     } = usePomodoroTimer();
 
@@ -146,6 +148,9 @@ export const PomodoroTimer: React.FC = () => {
                     pausePromptDelay={pausePromptDelay}
                     currentTheme={currentTheme}
                     soundsEnabled={soundsEnabled}
+                    // Pass the missing sound props
+                    sessionEndSound={sessionEndSound} 
+                    pausePromptSound={pausePromptSound}
                     youtubePlayerVisible={youtubePlayerVisible}
                     keepRunningOnTransition={keepRunningOnTransition}
                     // Pass handlers from hook

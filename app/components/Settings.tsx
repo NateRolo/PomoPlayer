@@ -7,21 +7,18 @@ import { ThemeName } from '../types/theme'
 import { ThemePreview } from './ThemePreview'
 
 // Define sound file lists
-const sessionEndSounds = [
-    { name: "Default", file: "sessionEndDefault.mp3" },
+const allSounds = [
+    { name: "Default End", file: "sessionEndDefault.mp3" },
+    { name: "Default Pause", file: "pausePromptDefault.mp3" },
     { name: "Alarm 1", file: "sessionEnd.mp3" },
     { name: "Alarm 2", file: "sessionEnd2.mp3" },
     { name: "Chime 1", file: "sessionEnd3.mp3" },
     { name: "Chime 2", file: "sessionEnd4.mp3" },
+    { name: "Chime 3", file: "pausePrompt3.mp3" }, // Re-using chime
     { name: "Synth", file: "sessionEnd5.mp3" },
-];
-
-const pausePromptSounds = [
-    { name: "Default", file: "pausePromptDefault.mp3" },
-    { name: "Beep 1", file: "pausePrompt2.mp3" },
-    { name: "Beep 2", file: "pausePrompt3.mp3" },
-    { name: "Click 1", file: "pausePrompt4.mp3" },
-    { name: "Click 2", file: "pausePrompt5.mp3" },
+    { name: "Soft Bell 1", file: "pausePrompt2.mp3" }, // Re-using bell
+    { name: "Cartoon Spring", file: "pausePrompt4.mp3" },
+    { name: "Double Ring", file: "pausePrompt5.mp3" },
 ];
 
 /**
@@ -729,7 +726,7 @@ export const Settings: React.FC<SettingsProps> = ({
                                                     onChange={(e) => setNewSessionEndSound(e.target.value)}
                                                     disabled={!newSoundsEnabled}
                                                 >
-                                                    {sessionEndSounds.map(sound => (
+                                                    {allSounds.map(sound => (
                                                         <option key={sound.file} value={sound.file}>
                                                             {sound.name}
                                                         </option>
@@ -761,7 +758,7 @@ export const Settings: React.FC<SettingsProps> = ({
                                                     onChange={(e) => setNewPausePromptSound(e.target.value)}
                                                     disabled={!newSoundsEnabled || !newPausePromptEnabled}
                                                 >
-                                                    {pausePromptSounds.map(sound => (
+                                                    {allSounds.map(sound => (
                                                         <option key={sound.file} value={sound.file}>
                                                             {sound.name}
                                                         </option>
