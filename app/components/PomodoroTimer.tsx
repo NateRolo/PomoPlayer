@@ -18,6 +18,8 @@ import { TimerDisplay } from "./PomodoroTimer/TimerDisplay"
 import { TimerControls } from "./PomodoroTimer/TimerControls"
 import { ActionBar } from "./PomodoroTimer/ActionBar"
 import { YouTubePlayerWrapper } from "./PomodoroTimer/YouTubePlayerWrapper"; 
+// Remove unused icons
+// import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 
 /**
  * PomodoroTimer is the main component of the application, implementing the Pomodoro Technique
@@ -111,6 +113,9 @@ export const PomodoroTimer: React.FC = () => {
                             onShowVideoLibrary={() => setShowVideoLibrary(true)}
                             currentTheme={currentTheme}
                             onToggleTheme={toggleTheme}
+                            // Pass player visibility props
+                            youtubePlayerVisible={youtubePlayerVisible}
+                            onTogglePlayer={() => setYoutubePlayerVisible(!youtubePlayerVisible)}
                         />
                     </div>
                 </div>
@@ -118,7 +123,8 @@ export const PomodoroTimer: React.FC = () => {
                 {/* Video Section */}
                 {/* Removed flex-1 overflow-y-auto as the whole page scrolls now */}
                 {/* Added pb-16 or similar if MiniPlayer needs space */}
-                <div className="w-full max-w-2xl mx-auto p-4 pb-16"> 
+                <div className="w-full max-w-2xl mx-auto p-4 pb-16 relative"> {/* Keep relative if needed for other elements later */}
+                    {/* Removed toggle button from here */}
                     <YouTubePlayerWrapper
                         youtubeUrl={youtubeUrl}
                         isVisible={youtubePlayerVisible}

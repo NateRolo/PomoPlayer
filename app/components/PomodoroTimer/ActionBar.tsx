@@ -1,5 +1,6 @@
 import type React from "react";
 import { ThemeName } from "../../types/theme"; // Assuming ThemeName is here
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 
 // Icons (simple SVGs for example)
 const SunIcon = () => (
@@ -26,6 +27,8 @@ interface ActionBarProps {
     onShowVideoLibrary: () => void;
     currentTheme: ThemeName;
     onToggleTheme: () => void;
+    youtubePlayerVisible: boolean;
+    onTogglePlayer: () => void;
 }
 
 export const ActionBar: React.FC<ActionBarProps> = ({
@@ -33,6 +36,8 @@ export const ActionBar: React.FC<ActionBarProps> = ({
     onShowVideoLibrary,
     currentTheme,
     onToggleTheme,
+    youtubePlayerVisible,
+    onTogglePlayer,
 }) => {
     let ThemeIcon: React.FC = SunIcon; // Default to Sun (switch to light)
     let themeTitle = "Switch to Light Mode";
@@ -50,8 +55,8 @@ export const ActionBar: React.FC<ActionBarProps> = ({
     }
 
     return (
-        // Stack vertically by default, use grid on medium screens
-        <div className="w-full max-w-md min-w-[300px] flex flex-col md:grid md:grid-cols-3 gap-2">
+        // Stack vertically by default, use grid on medium screens - change to 4 columns
+        <div className="w-full max-w-md min-w-[300px] flex flex-col md:grid md:grid-cols-4 gap-2">
             {/* Settings Button */}
             <button
                 className="btn btn-neutral hover:btn-info border border-base-content/20 transform transition-all duration-200 hover:scale-105 active:scale-95"
@@ -75,6 +80,18 @@ export const ActionBar: React.FC<ActionBarProps> = ({
                 title={themeTitle}
             >
                 <ThemeIcon />
+            </button>
+            {/* Player Toggle Button */}
+            <button
+                className="btn btn-neutral hover:btn-accent border border-base-content/20 transform transition-all duration-200 hover:scale-105 active:scale-95"
+                onClick={onTogglePlayer}
+                title={youtubePlayerVisible ? "Hide Player" : "Show Player"}
+            >
+                {youtubePlayerVisible ? (
+                    <EyeSlashIcon className="w-5 h-5" />
+                ) : (
+                    <EyeIcon className="w-5 h-5" />
+                )}
             </button>
         </div>
     );
