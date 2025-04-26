@@ -13,6 +13,10 @@ export const DEFAULT_DURATIONS = {
     longBreak: 15 * 60,
 }
 
+// Default sound files
+const DEFAULT_SESSION_END_SOUND = "sessionEndDefault.mp3";
+const DEFAULT_PAUSE_PROMPT_SOUND = "pausePromptDefault.mp3";
+
 const DEFAULT_YOUTUBE_URL = "https://www.youtube.com/watch?v=jfKfPfyJRdk"
 
 export function usePomodoroTimer() {
@@ -30,41 +34,33 @@ export function usePomodoroTimer() {
     const [pausePromptDelay, setPausePromptDelay] = useState(2) // minutes
     const [currentTheme, setCurrentTheme] = useState<ThemeName>('dark')
     const [soundsEnabled, setSoundsEnabled] = useState(true)
+    // State for selected sound files
+    const [sessionEndSound, setSessionEndSound] = useState(DEFAULT_SESSION_END_SOUND);
+    const [pausePromptSound, setPausePromptSound] = useState(DEFAULT_PAUSE_PROMPT_SOUND);
     const [youtubePlayerVisible, setYoutubePlayerVisible] = useState(true) // Keep UI state separate? Maybe move later.
     const [showVideoLibrary, setShowVideoLibrary] = useState(false) // Keep UI state separate? Maybe move later.
     const [hasStarted, setHasStarted] = useState(false) // Track if timer was ever started in the current session
     const [isYouTubePlaying, setIsYouTubePlaying] = useState(false)
-    const alarmAudio = useRef<HTMLAudioElement | null>(null)
     const [keepRunningOnTransition, setKeepRunningOnTransition] = useState(false)
     const soundIntervalRef = useRef<NodeJS.Timeout | null>(null)
     const pauseTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
     // --- Sound Effects ---
-    useEffect(() => {
-        const audio = new Audio("/sounds/notification2.mp3");
-        alarmAudio.current = audio;
-        return () => {
-            if (alarmAudio.current) {
-                alarmAudio.current.pause();
-                alarmAudio.current.currentTime = 0;
-            }
-        };
-    }, []);
-
     const playAlarm = useCallback(() => {
-        if (soundsEnabled && alarmAudio.current) {
-            // Ensure sound plays from the beginning if called again quickly
-            alarmAudio.current.currentTime = 0;
-            alarmAudio.current.play().catch(err => console.error("Error playing alarm:", err));
+        if (soundsEnabled) {
+            // Create and play the selected session end sound
+            const audio = new Audio(`/sounds/${sessionEndSound}`);
+            audio.play().catch(err => console.error(`Error playing sound ${sessionEndSound}:`, err));
         }
-    }, [soundsEnabled]);
+    }, [soundsEnabled, sessionEndSound]);
 
     const playPausePromptSound = useCallback(() => {
         if (soundsEnabled) {
-            const audio = new Audio("/sounds/pausePrompt.mp3");
-            audio.play().catch(console.error);
+            // Create and play the selected pause prompt sound
+            const audio = new Audio(`/sounds/${pausePromptSound}`);
+            audio.play().catch(err => console.error(`Error playing sound ${pausePromptSound}:`, err));
         }
-    }, [soundsEnabled]);
+    }, [soundsEnabled, pausePromptSound]);
 
     // --- Core Timer Logic ---
     const handleSessionComplete = useCallback((options?: { playSound?: boolean, showAlert?: boolean }) => {
@@ -150,6 +146,12 @@ export function usePomodoroTimer() {
 
         const storedSoundsEnabled = localStorage.getItem("soundsEnabled");
         if (storedSoundsEnabled !== null) setSoundsEnabled(JSON.parse(storedSoundsEnabled));
+
+        // Load selected sounds
+        const storedSessionEndSound = localStorage.getItem("sessionEndSound");
+        if (storedSessionEndSound) setSessionEndSound(storedSessionEndSound);
+        const storedPausePromptSound = localStorage.getItem("pausePromptSound");
+        if (storedPausePromptSound) setPausePromptSound(storedPausePromptSound);
 
         const storedPlayerVisible = localStorage.getItem("youtubePlayerVisible");
         if (storedPlayerVisible !== null) setYoutubePlayerVisible(JSON.parse(storedPlayerVisible));
@@ -291,6 +293,9 @@ export function usePomodoroTimer() {
         newPausePromptDelay: number,
         newTheme: ThemeName,
         newSoundsEnabled: boolean,
+        // Add sound selection params
+        newSessionEndSound: string,
+        newPausePromptSound: string,
         newYoutubePlayerVisible: boolean,
         newKeepRunningOnTransition: boolean // <-- Add new parameter
     ) => {
@@ -306,6 +311,9 @@ export function usePomodoroTimer() {
         setPausePromptDelay(newPausePromptDelay);
         setCurrentTheme(newTheme);
         setSoundsEnabled(newSoundsEnabled);
+        // Update sound state
+        setSessionEndSound(newSessionEndSound);
+        setPausePromptSound(newPausePromptSound);
         setYoutubePlayerVisible(newYoutubePlayerVisible);
         setKeepRunningOnTransition(newKeepRunningOnTransition); // <-- Update state
         document.documentElement.setAttribute("data-theme", newTheme);
@@ -318,6 +326,9 @@ export function usePomodoroTimer() {
         localStorage.setItem("pausePromptDelay", newPausePromptDelay.toString()); // Store as string
         localStorage.setItem("theme", newTheme);
         localStorage.setItem("soundsEnabled", JSON.stringify(newSoundsEnabled));
+        // Persist sounds
+        localStorage.setItem("sessionEndSound", newSessionEndSound);
+        localStorage.setItem("pausePromptSound", newPausePromptSound);
         localStorage.setItem("youtubePlayerVisible", JSON.stringify(newYoutubePlayerVisible));
         localStorage.setItem("keepRunningOnTransition", JSON.stringify(newKeepRunningOnTransition)); // <-- Persist new setting
 
@@ -425,6 +436,8 @@ export function usePomodoroTimer() {
         durations, // Needed for display/settings
         currentTheme,
         soundsEnabled, // Needed for settings
+        sessionEndSound,
+        pausePromptSound,
         pausePromptEnabled, // Needed for settings
         pausePromptDelay, // Needed for settings
         youtubeUrl, // Needed for player & settings

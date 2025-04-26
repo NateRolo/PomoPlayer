@@ -1,11 +1,28 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
-import { DEFAULT_DURATIONS } from "../hooks/usePomodoroTimer"
+import { useState, useRef, useEffect } from "react"
+import { DEFAULT_DURATIONS, usePomodoroTimer } from "../hooks/usePomodoroTimer"
 import { ThemeName } from '../types/theme'
 import { ThemePreview } from './ThemePreview'
 
+// Define sound file lists
+const sessionEndSounds = [
+    { name: "Default", file: "sessionEndDefault.mp3" },
+    { name: "Alarm 1", file: "sessionEnd.mp3" },
+    { name: "Alarm 2", file: "sessionEnd2.mp3" },
+    { name: "Chime 1", file: "sessionEnd3.mp3" },
+    { name: "Chime 2", file: "sessionEnd4.mp3" },
+    { name: "Synth", file: "sessionEnd5.mp3" },
+];
+
+const pausePromptSounds = [
+    { name: "Default", file: "pausePromptDefault.mp3" },
+    { name: "Beep 1", file: "pausePrompt2.mp3" },
+    { name: "Beep 2", file: "pausePrompt3.mp3" },
+    { name: "Click 1", file: "pausePrompt4.mp3" },
+    { name: "Click 2", file: "pausePrompt5.mp3" },
+];
 
 /**
  * Settings component provides a modal interface for configuring timer durations,
@@ -20,6 +37,8 @@ interface SettingsProps {
     pausePromptDelay: number
     currentTheme: ThemeName
     soundsEnabled: boolean
+    sessionEndSound: string
+    pausePromptSound: string
     youtubePlayerVisible: boolean
     keepRunningOnTransition: boolean
     onSave: (
@@ -30,6 +49,8 @@ interface SettingsProps {
         pausePromptDelay: number,
         theme: ThemeName,
         soundsEnabled: boolean,
+        sessionEndSound: string,
+        pausePromptSound: string,
         youtubePlayerVisible: boolean,
         keepRunningOnTransition: boolean,
         durationChanges: { work: boolean; shortBreak: boolean; longBreak: boolean }
@@ -50,6 +71,8 @@ const DEFAULT_SETTINGS = {
     pausePromptDelay: 2,
     theme: "dark" as ThemeName,
     soundsEnabled: true,
+    sessionEndSound: "sessionEndDefault.mp3",
+    pausePromptSound: "pausePromptDefault.mp3",
     youtubePlayerVisible: true,
     keepRunningOnTransition: false
 }
@@ -62,6 +85,8 @@ export const Settings: React.FC<SettingsProps> = ({
     pausePromptDelay,
     currentTheme,
     soundsEnabled,
+    sessionEndSound,
+    pausePromptSound,
     youtubePlayerVisible,
     keepRunningOnTransition,
     onSave,
@@ -77,6 +102,8 @@ export const Settings: React.FC<SettingsProps> = ({
     const [newPausePromptDelay, setNewPausePromptDelay] = useState(pausePromptDelay)
     const [selectedTheme, setSelectedTheme] = useState<ThemeName>(currentTheme as ThemeName)
     const [newSoundsEnabled, setNewSoundsEnabled] = useState(soundsEnabled)
+    const [newSessionEndSound, setNewSessionEndSound] = useState(sessionEndSound)
+    const [newPausePromptSound, setNewPausePromptSound] = useState(pausePromptSound)
     const [newYoutubePlayerVisible, setNewYoutubePlayerVisible] = useState(youtubePlayerVisible)
     const [newKeepRunningOnTransition, setNewKeepRunningOnTransition] = useState(keepRunningOnTransition)
     const [workDurationError, setWorkDurationError] = useState<string | null>(null)
@@ -86,6 +113,7 @@ export const Settings: React.FC<SettingsProps> = ({
     const [workSessionError, setWorkSessionError] = useState<string | null>(null)
     const [youtubeUrlError, setYoutubeUrlError] = useState<string | null>(null)
     const [previewTheme, setPreviewTheme] = useState<ThemeName | null>(null)
+    const audioPreviewRef = useRef<HTMLAudioElement | null>(null)
 
     const handleWorkDurationChange = (value: string) => {
         const numValue = parseInt(value, 10);
@@ -338,6 +366,8 @@ export const Settings: React.FC<SettingsProps> = ({
             newPausePromptDelay,
             selectedTheme,
             newSoundsEnabled,
+            newSessionEndSound,
+            newPausePromptSound,
             newYoutubePlayerVisible,
             newKeepRunningOnTransition,
             durationChanges
@@ -360,6 +390,8 @@ export const Settings: React.FC<SettingsProps> = ({
         setNewPausePromptDelay(DEFAULT_SETTINGS.pausePromptDelay);
             setSelectedTheme(DEFAULT_SETTINGS.theme);
         setNewSoundsEnabled(DEFAULT_SETTINGS.soundsEnabled);
+        setNewSessionEndSound(DEFAULT_SETTINGS.sessionEndSound);
+        setNewPausePromptSound(DEFAULT_SETTINGS.pausePromptSound);
         setNewYoutubePlayerVisible(DEFAULT_SETTINGS.youtubePlayerVisible);
         setNewKeepRunningOnTransition(DEFAULT_SETTINGS.keepRunningOnTransition);
 
@@ -371,12 +403,37 @@ export const Settings: React.FC<SettingsProps> = ({
             DEFAULT_SETTINGS.pausePromptDelay,
             DEFAULT_SETTINGS.theme,
             DEFAULT_SETTINGS.soundsEnabled,
-                DEFAULT_SETTINGS.youtubePlayerVisible,
-                DEFAULT_SETTINGS.keepRunningOnTransition,
-                { work: true, shortBreak: true, longBreak: true }
-            );
+            DEFAULT_SETTINGS.sessionEndSound,
+            DEFAULT_SETTINGS.pausePromptSound,
+            DEFAULT_SETTINGS.youtubePlayerVisible,
+            DEFAULT_SETTINGS.keepRunningOnTransition,
+            { work: true, shortBreak: true, longBreak: true }
+        );
         }
     }
+
+    // Function to play a sound preview
+    const playSoundPreview = (soundFile: string) => {
+        if (!soundFile) return;
+        if (audioPreviewRef.current) {
+            audioPreviewRef.current.pause(); // Stop previous sound if any
+        }
+        audioPreviewRef.current = new Audio(`/sounds/${soundFile}`);
+        audioPreviewRef.current.play().catch(err => {
+            console.error("Error playing sound preview:", err);
+            alert(`Could not play sound: ${soundFile}`);
+        });
+    };
+
+    // Cleanup audio on component unmount
+    useEffect(() => {
+        return () => {
+            if (audioPreviewRef.current) {
+                audioPreviewRef.current.pause();
+                audioPreviewRef.current = null;
+            }
+        };
+    }, []);
 
     return (
         <>
@@ -655,8 +712,73 @@ export const Settings: React.FC<SettingsProps> = ({
                                                     checked={newSoundsEnabled}
                                                     onChange={(e) => setNewSoundsEnabled(e.target.checked)}
                                                     className="toggle toggle-primary"
+                                                    disabled={!newSoundsEnabled}
                                                 />
                                             </label>
+                                        </div>
+
+                                        {/* Session End Sound Selector */}
+                                        <div className="form-control">
+                                            <label className="label">
+                                                <span className="label-text">Session End Sound</span>
+                                            </label>
+                                            <div className="flex items-center gap-2">
+                                                <select
+                                                    className="select select-bordered flex-grow"
+                                                    value={newSessionEndSound}
+                                                    onChange={(e) => setNewSessionEndSound(e.target.value)}
+                                                    disabled={!newSoundsEnabled}
+                                                >
+                                                    {sessionEndSounds.map(sound => (
+                                                        <option key={sound.file} value={sound.file}>
+                                                            {sound.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <button
+                                                    className="btn btn-ghost btn-sm btn-square"
+                                                    onClick={() => playSoundPreview(newSessionEndSound)}
+                                                    title="Preview Sound"
+                                                    disabled={!newSoundsEnabled}
+                                                >
+                                                    {/* Play Icon SVG */}
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                                                      <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {/* Pause Prompt Sound Selector */}
+                                        <div className="form-control">
+                                            <label className="label">
+                                                <span className="label-text">Pause Prompt Sound</span>
+                                            </label>
+                                            <div className="flex items-center gap-2">
+                                                <select
+                                                    className="select select-bordered flex-grow"
+                                                    value={newPausePromptSound}
+                                                    onChange={(e) => setNewPausePromptSound(e.target.value)}
+                                                    disabled={!newSoundsEnabled || !newPausePromptEnabled}
+                                                >
+                                                    {pausePromptSounds.map(sound => (
+                                                        <option key={sound.file} value={sound.file}>
+                                                            {sound.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                 <button
+                                                    className="btn btn-ghost btn-sm btn-square"
+                                                    onClick={() => playSoundPreview(newPausePromptSound)}
+                                                    title="Preview Sound"
+                                                    disabled={!newSoundsEnabled || !newPausePromptEnabled}
+                                                >
+                                                    {/* Play Icon SVG */}
+                                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                                                      <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                                                    </svg>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
